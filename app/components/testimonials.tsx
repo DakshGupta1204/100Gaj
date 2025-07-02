@@ -42,7 +42,7 @@ export default function Testimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
-              className="bg-white/95 p-6 rounded-xl shadow-lg"
+              className="bg-white/95 p-6 rounded-xl shadow-lg min-h-[340px] flex flex-col justify-between"
             >
               <div className="mb-4">
                 {[...Array(5)].map((_, i) => (

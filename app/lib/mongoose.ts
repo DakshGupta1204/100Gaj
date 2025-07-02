@@ -1,5 +1,11 @@
 import mongoose from 'mongoose';
 
+declare global {
+  // Allow global.mongoose to be of any type
+  // eslint-disable-next-line no-var
+  var mongoose: any;
+}
+
 if (!process.env.MONGODB_URI) {
   throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
 }

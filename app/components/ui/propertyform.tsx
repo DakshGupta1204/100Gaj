@@ -207,7 +207,25 @@ export default function PropertyForm({
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >,
   ) => {
-    const { name, value } = e.target;
+    // Only declare name, value, type once
+    const { name, value, type } = e.target;
+    let newValue = value;
+    // Trim whitespace for text fields
+    if (type === 'text' || type === 'textarea') {
+      newValue = value.replace(/^\s+|\s+$/g, '');
+    }
+    // Restrict phone number to digits only
+    if (name === 'ownerDetails.phone') {
+      newValue = newValue.replace(/\D/g, '').slice(0, 10);
+    }
+    // Prevent negative values for bedrooms, bathrooms, area
+    if (["bedrooms", "bathrooms", "area"].includes(name)) {
+      if (newValue && Number(newValue) < 0) newValue = '';
+    }
+    // Prevent negative or zero value for price
+    if (name === "price") {
+      if (newValue && Number(newValue) < 1) newValue = '';
+    }
     if (name.includes(".")) {
       const [parent, child] = name.split(".");
       if (parent === "ownerDetails") {
@@ -215,7 +233,7 @@ export default function PropertyForm({
           ...formData,
           ownerDetails: {
             ...formData.ownerDetails,
-            [child]: value,
+            [child]: newValue,
           },
         });
       } else {
@@ -223,14 +241,14 @@ export default function PropertyForm({
           ...formData,
           [parent]: {
             ...(formData as any)[parent],
-            [child]: value,
+            [child]: newValue,
           },
         });
       }
     } else {
       setFormData({
         ...formData,
-        [name]: value,
+        [name]: newValue,
       });
     }
   };
@@ -425,9 +443,69 @@ export default function PropertyForm({
     setIsSubmitting(true);
     setError(null);
 
+    // Trim all text fields before validation
+    const trimmedFormData = {
+      ...formData,
+      title: formData.title.trim(),
+      description: formData.description.trim(),
+      ownerDetails: {
+        ...formData.ownerDetails,
+        name: formData.ownerDetails.name.trim(),
+        phone: formData.ownerDetails.phone.trim(),
+      },
+      address: {
+        ...formData.address,
+        street: formData.address.street.trim(),
+        city: formData.address.city.trim(),
+        state: formData.address.state.trim(),
+        zipCode: formData.address.zipCode.trim(),
+        locality: formData.address.locality.trim(),
+      },
+    };
+
+    // Phone validation
+    if (!/^\d{10}$/.test(trimmedFormData.ownerDetails.phone)) {
+      setError("Phone number must be exactly 10 digits");
+      toast.error("Phone number must be exactly 10 digits");
+      setIsSubmitting(false);
+      return;
+    }
+    // Price validation
+    if (Number(trimmedFormData.price) <= 0) {
+      setError("Price must be a positive number");
+      toast.error("Price must be a positive number");
+      setIsSubmitting(false);
+      return;
+    }
+    // Area, bedrooms, bathrooms validation
+    if (
+      Number(trimmedFormData.area) <= 0 ||
+      Number(trimmedFormData.bedrooms) < 0 ||
+      Number(trimmedFormData.bathrooms) < 0
+    ) {
+      setError("Area must be positive, bedrooms and bathrooms cannot be negative");
+      toast.error("Area must be positive, bedrooms and bathrooms cannot be negative");
+      setIsSubmitting(false);
+      return;
+    }
+    // Prevent whitespace-only or empty fields
+    if (
+      !trimmedFormData.title ||
+      !trimmedFormData.description ||
+      !trimmedFormData.ownerDetails.name ||
+      !trimmedFormData.address.city ||
+      !trimmedFormData.address.locality ||
+      !trimmedFormData.address.street
+    ) {
+      setError("Please fill all required fields with valid values");
+      toast.error("Please fill all required fields with valid values");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       // Validate owner details
-      if (!formData.ownerDetails.name || !formData.ownerDetails.phone) {
+      if (!trimmedFormData.ownerDetails.name || !trimmedFormData.ownerDetails.phone) {
         setError("Please provide owner name and phone number");
         toast.error("Please provide owner name and phone number");
         setIsSubmitting(false);
@@ -435,7 +513,7 @@ export default function PropertyForm({
       }
 
       // Make sure we have at least five images
-      if (formData.images.length + formData.existingImages.length < 5) {
+      if (trimmedFormData.images.length + trimmedFormData.existingImages.length < 5) {
         setError("Please add at least 5 images of your property");
         toast.error("Please add at least 5 images");
         setIsSubmitting(false);
@@ -448,8 +526,8 @@ export default function PropertyForm({
       
 
       // Get latitude and longitude as numbers
-      const latitude = parseFloat(formData.address.coordinates.latitude);
-      const longitude = parseFloat(formData.address.coordinates.longitude);
+      const latitude = parseFloat(trimmedFormData.address.coordinates.latitude);
+      const longitude = parseFloat(trimmedFormData.address.coordinates.longitude);
 
       // Check if latitude and longitude are valid numbers
       if (isNaN(latitude) || isNaN(longitude)) {
@@ -473,16 +551,16 @@ export default function PropertyForm({
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
       // Create a copy of formData without existingImages
-      const { existingImages, ...formDataWithoutImages } = formData;
+      const { existingImages, ...formDataWithoutImages } = trimmedFormData;
       console.log(existingImages);
       // Create address object without coordinates
-      const { coordinates, ...addressWithoutCoordinates } = formData.address;
+      const { coordinates, ...addressWithoutCoordinates } = trimmedFormData.address;
       console.log(coordinates);
 
       let newImageUrls: string[] = [];
-    if (formData.images.length > 0) {
+    if (trimmedFormData.images.length > 0) {
       try {
-        newImageUrls = await uploadImages(formData.images);
+        newImageUrls = await uploadImages(trimmedFormData.images);
         toast.success(`${newImageUrls.length} images uploaded successfully!`);
       } catch (error) {
         setError("Failed to upload images. Please try again.");
@@ -494,23 +572,23 @@ export default function PropertyForm({
     }
 
     const allImageUrls = [
-        ...formData.existingImages,
+        ...trimmedFormData.existingImages,
         ...newImageUrls,
       ];
       // Prepare data for submission
       const propertyData = {
         ...formDataWithoutImages,
-        price: Number(formData.price),
-        area: Number(formData.area),
-        bedrooms: formData.bedrooms ? Number(formData.bedrooms) : 0,
-        bathrooms: formData.bathrooms ? Number(formData.bathrooms) : 0,
-        furnished: formData.amenities.includes("Furnished"),
+        price: Number(trimmedFormData.price),
+        area: Number(trimmedFormData.area),
+        bedrooms: trimmedFormData.bedrooms ? Number(trimmedFormData.bedrooms) : 0,
+        bathrooms: trimmedFormData.bathrooms ? Number(trimmedFormData.bathrooms) : 0,
+        furnished: trimmedFormData.amenities.includes("Furnished"),
         features: [],
         images: allImageUrls,
         status: initialData?.status || "active",
         ownerDetails: {
-          name: formData.ownerDetails.name,
-          phone: formData.ownerDetails.phone,
+          name: trimmedFormData.ownerDetails.name,
+          phone: trimmedFormData.ownerDetails.phone,
         },
         address: {
           ...addressWithoutCoordinates,
@@ -1000,6 +1078,7 @@ export default function PropertyForm({
                             onChange={handleInputChange}
                             placeholder="Enter price"
                             required
+                            min={1}
                             className="bg-black/60 border-orange-500/30 hover:border-orange-500/50 focus:border-orange-500 text-white placeholder-gray-500 h-12"
                           />
                         </div>
@@ -1019,6 +1098,7 @@ export default function PropertyForm({
                             onChange={handleInputChange}
                             placeholder="Enter area"
                             required
+                            min={1}
                             className="bg-black/60 border-orange-500/30 hover:border-orange-500/50 focus:border-orange-500 text-white placeholder-gray-500 h-12"
                           />
                         </div>
@@ -1039,6 +1119,7 @@ export default function PropertyForm({
                             value={formData.bedrooms}
                             onChange={handleInputChange}
                             placeholder="Number of bedrooms"
+                            min={0}
                             className="bg-black/60 border-orange-500/30 hover:border-orange-500/50 focus:border-orange-500 text-white placeholder-gray-500 h-12"
                           />
                         </div>
@@ -1056,6 +1137,7 @@ export default function PropertyForm({
                             value={formData.bathrooms}
                             onChange={handleInputChange}
                             placeholder="Number of bathrooms"
+                            min={0}
                             className="bg-black/60 border-orange-500/30 hover:border-orange-500/50 focus:border-orange-500 text-white placeholder-gray-500 h-12"
                           />
                         </div>
@@ -1099,6 +1181,10 @@ export default function PropertyForm({
                             onChange={handleInputChange}
                             placeholder="Enter owner's phone number"
                             required
+                            type="tel"
+                            pattern="^\\d{10}$"
+                            maxLength={10}
+                            minLength={10}
                             className="bg-black/60 border-orange-500/30 hover:border-orange-500/50 focus:border-orange-500 text-white placeholder-gray-500 h-12"
                           />
                         </div>

@@ -1,5 +1,11 @@
 import mongoose from 'mongoose';
 
+declare global {
+  // Allow global.mongoose to be of any type
+  // eslint-disable-next-line no-var
+  var mongoose: any;
+}
+
 const MONGODB_URI = process.env.MONGODB_URI || '';
 
 if (!MONGODB_URI) {
