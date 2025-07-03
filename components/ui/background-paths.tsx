@@ -639,20 +639,23 @@ export function BackgroundPaths() {
     (secondPartWords.join("").length + secondPartWords.length) * 0.03;
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-black">
+    <div className="relative min-h-screen w-full flex items-center justify-center bg-black">
       <div className="absolute inset-0">
         <FloatingPaths position={1} />
         <FloatingPaths position={-1} />
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 md:px-6 text-center">
+      <div className="relative z-10 container mx-auto px-4 md:px-6 text-center pt-20">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 2 }}
           className="max-w-4xl mx-auto"
         >
-          <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold mb-8 flex flex-col ">
+          <h1
+            className="text-5xl sm:text-7xl md:text-8xl font-bold mb-8 flex flex-col"
+            style={{ lineHeight: 1.3, paddingBottom: '3rem' }}
+          >
             <span className="mb-4 ">
               {/* First part - "Find your" - handling each word */}
               {firstPartWords.map((word, wordIndex) => (

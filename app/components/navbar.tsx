@@ -245,6 +245,15 @@ export default function Navbar() {
       setError("Email and password are required");
       return;
     }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long");
+      return;
+    }
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      setError("Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character");
+      return;
+    }
 
     try {
       setLoading(true);
@@ -300,6 +309,7 @@ export default function Navbar() {
     }
 
     if (password.length < 8) {
+      toast.error("Password must be at least 8 characters long. Mix of letters, numbers, special character, uppercase and lowercase required.");
       setError("Password must be at least 8 characters long");
       return;
     }
@@ -308,6 +318,7 @@ export default function Navbar() {
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) {
+      toast.error("Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.");
       setError(
         "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
       );
@@ -347,6 +358,10 @@ export default function Navbar() {
 
     if (!userId || !verificationCode) {
       setError("Verification code is required");
+      return;
+    }
+    if (!/^\d{6}$/.test(verificationCode)) {
+      setError("Verification code must be exactly 6 digits");
       return;
     }
 
@@ -461,6 +476,11 @@ export default function Navbar() {
 
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match");
+      return;
+    }
+
+    if (!/^\d{6}$/.test(verificationCode)) {
+      setError("Verification code must be exactly 6 digits");
       return;
     }
 
@@ -1052,13 +1072,11 @@ export default function Navbar() {
 
                       {/* Login Form */}
                       {activeTab === "login" && (
-                        <form onSubmit={handleLogin} className="space-y-4">
+                        <form onSubmit={handleLogin} className="flex flex-col gap-2 p-2 bg-white rounded-xl shadow-lg">
                           <div>
-                            <label className="text-gray-700 text-sm font-medium mb-2 block">
-                              Email
-                            </label>
+                            <label className="text-gray-700 text-xs font-medium mb-1 block">Email</label>
                             <div className="relative">
-                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
                                 <Mail size={16} className="text-gray-400" />
                               </div>
                               <input
@@ -1066,27 +1084,24 @@ export default function Navbar() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Enter email"
-                                className="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
+                                className="w-full pl-8 pr-2 py-1.5 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
                               />
                             </div>
                           </div>
-
                           <div>
-                            <label className="text-gray-700 text-sm font-medium mb-2 block">
-                              Password
-                            </label>
+                            <label className="text-gray-700 text-xs font-medium mb-1 block">Password</label>
                             <div className="relative">
                               <input
                                 type={showPassword ? "text" : "password"}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="Enter password"
-                                className="w-full pl-4 pr-10 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
+                                className="w-full pl-2 pr-8 py-1.5 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
                               />
                               <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                className="absolute inset-y-0 right-0 pr-2 flex items-center"
                               >
                                 {showPassword ? (
                                   <EyeOff size={16} className="text-gray-400" />
@@ -1096,20 +1111,18 @@ export default function Navbar() {
                               </button>
                             </div>
                           </div>
-
                           <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="w-full py-1.5 px-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed text-sm"
                           >
                             {loading ? "Signing in..." : "Sign in"}
                           </button>
-
                           <div className="text-center">
                             <button
                               type="button"
                               onClick={() => setCurrentView("forgot-password")}
-                              className="text-orange-500 hover:text-orange-600 text-sm font-medium"
+                              className="text-orange-500 hover:text-orange-600 text-xs font-medium"
                             >
                               Forgot your password?
                             </button>
@@ -1119,26 +1132,21 @@ export default function Navbar() {
 
                       {/* Signup Form */}
                       {activeTab === "signup" && (
-                        <form onSubmit={handleSignup} className="space-y-4">
+                        <form onSubmit={handleSignup} className="flex flex-col gap-1 p-1 max-h-[400px] overflow-y-auto bg-white rounded-xl shadow-lg">
                           <div>
-                            <label className="text-gray-700 text-sm font-medium mb-2 block">
-                              Name
-                            </label>
+                            <label className="text-gray-700 text-xs font-medium mb-0.5 block">Name</label>
                             <input
                               type="text"
                               value={name}
                               onChange={(e) => setName(e.target.value)}
                               placeholder="Enter your full name"
-                              className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
+                              className="w-full px-1 py-1 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
                             />
                           </div>
-
                           <div>
-                            <label className="text-gray-700 text-sm font-medium mb-2 block">
-                              Email
-                            </label>
+                            <label className="text-gray-700 text-xs font-medium mb-0.5 block">Email</label>
                             <div className="relative">
-                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <div className="absolute inset-y-0 left-0 pl-1 flex items-center pointer-events-none">
                                 <Mail size={16} className="text-gray-400" />
                               </div>
                               <input
@@ -1146,27 +1154,24 @@ export default function Navbar() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Enter email"
-                                className="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
+                                className="w-full pl-7 pr-1 py-1 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
                               />
                             </div>
                           </div>
-
                           <div>
-                            <label className="text-gray-700 text-sm font-medium mb-2 block">
-                              Password
-                            </label>
+                            <label className="text-gray-700 text-xs font-medium mb-0.5 block">Password</label>
                             <div className="relative">
                               <input
                                 type={showPassword ? "text" : "password"}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="Create password"
-                                className="w-full pl-4 pr-10 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
+                                className="w-full pl-1 pr-7 py-1 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
                               />
                               <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                className="absolute inset-y-0 right-0 pr-1 flex items-center"
                               >
                                 {showPassword ? (
                                   <EyeOff size={16} className="text-gray-400" />
@@ -1175,18 +1180,8 @@ export default function Navbar() {
                                 )}
                               </button>
                             </div>
-                            <div className="mt-2 space-y-1 text-sm text-gray-600">
-                              <p>At least 8 characters</p>
-                              <p>Mix of letters and numbers</p>
-                              <p>At least 1 special character</p>
-                              <p>
-                                At least 1 lowercase letter and 1 uppercase
-                                letter
-                              </p>
-                            </div>
                           </div>
-
-                          <div className="flex items-center space-x-2">
+                          <div className="flex items-center space-x-1">
                             <input
                               type="checkbox"
                               id="isAgent"
@@ -1194,25 +1189,20 @@ export default function Navbar() {
                               onChange={(e) => setIsAgent(e.target.checked)}
                               className="w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
                             />
-                            <label htmlFor="isAgent" className="text-gray-700">
+                            <label htmlFor="isAgent" className="text-gray-700 text-xs">
                               I am a landlord or industry professional
                             </label>
                           </div>
-
                           <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="w-full py-1 px-1 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed text-xs"
                           >
                             {loading ? "Creating account..." : "Create account"}
                           </button>
-
-                          <p className="text-sm text-gray-600 text-center">
-                            By submitting, I accept 100 GAJ&apos;s{" "}
-                            <a
-                              href="#"
-                              className="text-orange-500 hover:text-orange-600"
-                            >
+                          <p className="text-xs text-gray-600 text-center mt-1 mb-0">
+                            By submitting, I accept 100 GAJ&apos;s {" "}
+                            <a href="#" className="text-orange-500 hover:text-orange-600">
                               terms of use
                             </a>
                             .
@@ -1397,10 +1387,13 @@ export default function Navbar() {
                           <input
                             type="text"
                             value={verificationCode}
-                            onChange={(e) =>
-                              setVerificationCode(e.target.value)
-                            }
-                            placeholder="Enter code"
+                            onChange={(e) => {
+                              // Only allow up to 6 digits
+                              const val = e.target.value.replace(/\D/g, "").slice(0, 6);
+                              setVerificationCode(val);
+                            }}
+                            placeholder="Enter 6-digit code"
+                            maxLength={6}
                             className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
                           />
                         </div>

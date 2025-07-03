@@ -5,8 +5,9 @@ import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 
 type Testimonial = {
-  src: string
+  src: string;
 };
+
 export const AnimatedTestimonials = ({
   testimonials,
   autoplay = true,
@@ -20,20 +21,21 @@ export const AnimatedTestimonials = ({
     setActive((prev) => (prev + 1) % testimonials.length);
   }, [testimonials.length]);
 
-  const isActive = (index: number) => {
-    return index === active;
-  };
-
   useEffect(() => {
     if (autoplay) {
       const interval = setInterval(handleNext, 2000);
       return () => clearInterval(interval);
     }
-  }, [autoplay,handleNext]);
+  }, [autoplay, handleNext]);
 
-  const randomRotateY = () => {
-    return Math.floor(Math.random() * 21) - 10;
-  };
+  const isActive = (index: number) => index === active;
+
+  // ✅ Stable random rotations per testimonial, only on client
+  const [rotations, setRotations] = useState<number[]>([]);
+  useEffect(() => {
+    setRotations(testimonials.map(() => Math.floor(Math.random() * 21) - 10));
+  }, [testimonials.length]);
+
   return (
     <div className="mx-auto px-4 font-sans antialiased md:max-w-4xl md:px-8 lg:px-12">
       <div className="relative flex flex-col items-center gap-10 ">
@@ -47,13 +49,13 @@ export const AnimatedTestimonials = ({
                     opacity: 0,
                     scale: 0.9,
                     z: -100,
-                    rotate: randomRotateY(),
+                    rotate: rotations[index] || 0,
                   }}
                   animate={{
                     opacity: isActive(index) ? 1 : 0.7,
                     scale: isActive(index) ? 1 : 0.95,
                     z: isActive(index) ? 0 : -100,
-                    rotate: isActive(index) ? 0 : randomRotateY(),
+                    rotate: isActive(index) ? 0 : (rotations[index] || 0),
                     zIndex: isActive(index)
                       ? 40
                       : testimonials.length + 2 - index,
@@ -63,7 +65,7 @@ export const AnimatedTestimonials = ({
                     opacity: 0,
                     scale: 0.9,
                     z: 100,
-                    rotate: randomRotateY(),
+                    rotate: rotations[index] || 0,
                   }}
                   transition={{
                     duration: 0.4,
@@ -84,8 +86,7 @@ export const AnimatedTestimonials = ({
             </AnimatePresence>
           </div>
         </div>
-        <div className="flex flex-col items-center justify-between py-4 text-center max-w-xl">
-        </div>
+        <div className="flex flex-col items-center justify-between py-4 text-center max-w-xl" />
       </div>
     </div>
   );
