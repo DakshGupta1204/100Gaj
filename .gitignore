@@ -39,3 +39,175 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# =======================
+# ADDITIONAL COMPREHENSIVE PATTERNS
+# =======================
+
+# Enhanced Dependencies
+# =====================
+lerna-debug.log*
+.npm/
+
+# Enhanced Environment Variables
+# =============================
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
+.env.example
+
+# Enhanced TypeScript
+# ===================
+*.d.ts.map
+tsconfig.tsbuildinfo
+.tscache/
+
+# Enhanced Testing
+# ================
+/.nyc_output
+/test-results/
+/playwright-report/
+junit.xml
+*.lcov
+
+# IDE & Editors
+# =============
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.swp
+*.swo
+*~
+.idea/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+.loadpath
+.externalToolBuilders/
+
+# Enhanced OS Generated Files
+# ===========================
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Enhanced Logs
+# =============
+logs/
+*.log
+
+# Runtime Data
+# ============
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Cache Directories
+# =================
+.eslintcache
+.stylelintcache
+.parcel-cache
+.cache/
+.nuxt
+.vuepress/dist
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+
+# Temporary Folders
+# =================
+tmp/
+temp/
+
+# Database
+# ========
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# Enhanced Deployment Platforms
+# =============================
+.netlify/
+.firebase/
+.firebaserc
+firebase-debug.log
+
+# Docker
+# ======
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Package Managers
+# ================
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Enhanced Security & Certificates
+# ================================
+*.p12
+*.key
+*.crt
+*.csr
+.secret
+.secrets
+
+# Tailwind CSS
+# ============
+/styles/globals.css.map
+
+# Storybook
+# =========
+storybook-static/
+
+# PWA files
+# =========
+**/public/sw.js
+**/public/workbox-*.js
+**/public/worker-*.js
+**/public/sw.js.map
+**/public/workbox-*.js.map
+**/public/worker-*.js.map
+
+# Local development
+# =================
+.local/
+*.local
+
+# Backup files
+# ============
+*.bak
+*.backup
+*.old
+*.orig
+
+# Compressed files
+# ================
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Development Tools
+# =================
+.npmrc
