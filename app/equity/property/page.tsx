@@ -1,8 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Search, SlidersHorizontal, MapPin, TrendingUp, Building2, Target, Star, Filter, Grid3X3, List, ArrowUpDown, Briefcase, Warehouse, Store, Server, UserPlus, Coffee } from "lucide-react";
+import { Search, SlidersHorizontal, MapPin, TrendingUp, Building2, Target, Star, Filter, Grid3X3, List, ArrowUpDown, Briefcase, Warehouse, Store, Server, UserPlus, Coffee, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { PropertyCard } from "../components";
 import EquityNavigation from "../components/EquityNavigation";
 import BackgroundVideo from "../components/BackgroundVideo";
@@ -498,24 +499,102 @@ export default function PropertyListingPage() {
                   : "grid-cols-1"
               }`}>
                 {filteredProperties.map((property, index) => {
-                  const glowColors = [
-                    "rgba(249, 115, 22, 0.3)", // orange
-                    "rgba(34, 197, 94, 0.3)",  // green  
-                    "rgba(147, 51, 234, 0.3)", // purple
-                    "rgba(59, 130, 246, 0.3)", // blue
-                    "rgba(239, 68, 68, 0.3)",  // red
-                    "rgba(245, 158, 11, 0.3)"  // amber
-                  ];
-                  const glowColor = glowColors[index % glowColors.length];
-                  
-                  return (
-                    <div
-                      key={property.id}
-                      className="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800/50 group h-full flex"
-                    >
-                      <PropertyCard property={property} />
-                    </div>
-                  );
+                  if (viewMode === "grid") {
+                    // Use the original PropertyCard for grid view
+                    return (
+                      <div
+                        key={property.id}
+                        className="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800/50 group h-full flex"
+                      >
+                        <PropertyCard property={property} />
+                      </div>
+                    );
+                  } else {
+                    // Use the detailed card layout from portfolio for list view
+                    return (
+                      <div
+                        key={property.id}
+                        className="bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-800 hover:border-purple-500/50 transition-all duration-300 p-6 hover:shadow-[0_0_24px_4px_#a78bfa66] hover:scale-[1.035] focus:shadow-[0_0_24px_4px_#a78bfa66] focus:scale-[1.035] outline-none mb-4"
+                        tabIndex={0}
+                      >
+                        {/* Header */}
+                        <div className="flex items-start justify-between mb-4">
+                          <div>
+                            <h3 className="text-lg font-bold text-white mb-1">{property.name}</h3>
+                            <div className="text-sm text-gray-400">{property.location}</div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className={`px-2 py-1 rounded-full text-xs font-bold ${property.riskLevel === 'Low' ? 'bg-green-500/20 text-green-400' : property.riskLevel === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400'}`}>{property.riskLevel}</div>
+                          </div>
+                        </div>
+
+                        {/* Investment Details */}
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div className="bg-[#a78bfa]/10 rounded-lg p-3">
+                            <div className="text-xl font-bold text-white mb-1">
+                              ₹{property.pricePerShare.toLocaleString()}
+                            </div>
+                            <div className="text-xs text-gray-400">Price per Share</div>
+                          </div>
+                          <div className="bg-[#a78bfa]/10 rounded-lg p-3">
+                            <div className="text-xl font-bold mb-1 text-purple-400">
+                              {property.currentYield}%
+                            </div>
+                            <div className="text-xs text-gray-400">Current Yield</div>
+                          </div>
+                        </div>
+
+                        {/* Shares Info */}
+                        <div className="mb-4">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-sm text-gray-400">Available Shares</span>
+                            <span className="text-sm font-semibold text-white">
+                              {property.availableShares} / {property.totalShares.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="text-sm text-gray-400 mb-2">
+                            {((property.availableShares / property.totalShares) * 100).toFixed(1)}% shares available
+                          </div>
+                        </div>
+
+                        {/* Performance Metrics */}
+                        <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-400">Predicted Growth</span>
+                            <span className="font-semibold text-purple-400">+{property.predictedAppreciation}%</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-400">AI Score</span>
+                            <span className="text-purple-400 font-semibold">{property.aiScore}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-400">Occupancy Rate</span>
+                            <span className="font-semibold text-green-400">{property.occupancyRate}%</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-400">Monthly Income</span>
+                            <span className="font-semibold text-[#B6FF3F]">
+  ₹{(property.rentalIncome / 12).toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
+</span>
+
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-2">
+                          <Link href={`/equity/property/${property.id}`} className="flex-1">
+                            <Button
+                              size="sm"
+                              className="bg-[#d1ff4a] hover:bg-[#b6e944] text-black w-full rounded-lg font-semibold flex items-center gap-2 justify-center"
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Details
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    );
+                  }
                 })}
               </div>
             ) : (

@@ -28,18 +28,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if email is verified
-    if (!user.emailVerified) {
-      return NextResponse.json(
-        { 
-          error: 'Email not verified', 
-          message: 'Please verify your email address before logging in',
-          userId: user._id 
-        },
-        { status: 403 }
-      );
-    }
-
     // Check password
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) {
@@ -50,32 +38,41 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate JWT token
-    const token = generateToken({ 
-      userId: user._id, 
-      email: user.email 
-    });
+    try {
+      const token = generateToken({ 
+        userId: user._id.toString(), 
+        email: user.email 
+      });
 
-    // Return user info without sensitive data
-    const userWithoutPassword = {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      image: user.image,
-    };
+      // Return user info without sensitive data
+      const userWithoutPassword = {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        image: user.image,
+        role: user.role
+      };
 
+      return NextResponse.json(
+        { 
+          success: true, 
+          message: 'Login successful',
+          user: userWithoutPassword,
+          token 
+        },
+        { status: 200 }
+      );
+    } catch (tokenError) {
+      console.error('Token generation error:', tokenError);
+      return NextResponse.json(
+        { error: 'Authentication failed. Please try again.' },
+        { status: 500 }
+      );
+    }
+  } catch (error) {
+    console.error('Login error:', error);
     return NextResponse.json(
-      { 
-        success: true, 
-        message: 'Login successful',
-        user: userWithoutPassword,
-        token 
-      },
-      { status: 200 }
-    );
-  } catch (_error) {
-
-    return NextResponse.json(
-      { error: 'An error occurred during login' },
+      { error: 'An error occurred during login. Please try again.' },
       { status: 500 }
     );
   }

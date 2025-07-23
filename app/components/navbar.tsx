@@ -23,7 +23,6 @@ import Image from "next/image";
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
   const [currentView, setCurrentView] = useState<
     "main" | "forgot-password" | "verify-email"
@@ -40,7 +39,7 @@ export default function Navbar() {
 
     if (errorParam) {
       // Open auth modal if there's an error
-      setIsAuthModalOpen(true);
+      // setIsAuthModalOpen(true); // Removed AuthModal state
       setActiveTab("login");
 
       // Handle specific OAuth errors
@@ -100,61 +99,10 @@ export default function Navbar() {
       const params = new URLSearchParams(window.location.search);
       const authToken = sessionStorage.getItem("authToken");
       if (params.get("modal") === "auth" && !authToken) {
-        setIsAuthModalOpen(true); // or your setIsAuthModal(true)
-      } else {
-        setIsAuthModalOpen(false);
+        router.push("/microestate/auth");
       }
     }
   }, []);
-
-  // useEffect(() => {
-  //   const checkAuthStatus = async () => {
-  //     if (typeof window !== "undefined") {
-  //       // First check sessionStorage for custom auth token
-  //       const token = sessionStorage.getItem("authToken");
-
-  //       if (token) {
-  //         try {
-  //           const authData = JSON.parse(token);
-  //           // Check if it's a Google auth session or custom auth
-  //           if (authData.provider === "google") {
-  //             // For Google auth, also verify the NextAuth session is still valid
-  //             const session = await getSession();
-  //             if (session?.user) {
-  //               setIsAuthenticated(true);
-  //             } else {
-  //               // Session expired, clear storage
-  //               sessionStorage.removeItem("authToken");
-  //               setIsAuthenticated(false);
-  //             }
-  //           } else {
-  //             // For custom auth, just check if token exists
-  //             setIsAuthenticated(true);
-  //           }
-  //         } catch (_error) {
-  //           //           sessionStorage.removeItem("authToken");
-  //           setIsAuthenticated(false);
-  //         }
-  //       } else {
-  //         // Check if there's a NextAuth session without our custom token
-  //         const session = await getSession();
-  //         if (session?.user) {
-  //           // Create our custom auth data for existing NextAuth session
-  //           const customAuthData = {
-  //             user: session.user,
-  //             expires: session.expires,
-  //             provider: "google",
-  //             timestamp: Date.now(),
-  //           };
-  //           sessionStorage.setItem("authToken", JSON.stringify(customAuthData));
-  //           setIsAuthenticated(true);
-  //         }
-  //       }
-  //     }
-  //   };
-
-  //   checkAuthStatus();
-  // }, []);
 
   // Clear errors and success messages when switching tabs
   useEffect(() => {
@@ -176,11 +124,11 @@ export default function Navbar() {
   }, []);
 
   // Reset form state when modal closes
-  useEffect(() => {
-    if (!isAuthModalOpen) {
-      resetFormState();
-    }
-  }, [isAuthModalOpen]);
+  // useEffect(() => {
+  //   if (!isAuthModalOpen) {
+  //     resetFormState();
+  //   }
+  // }, [isAuthModalOpen]);
 
   const resetFormState = () => {
     setEmail("");
@@ -233,13 +181,13 @@ export default function Navbar() {
   };
 
   // Show the auth modal
-  const openAuthModal = () => {
-    resetFormState();
-    setIsAuthModalOpen(true);
-    const url = new URL(window.location.href);
-    url.searchParams.set("modal", "auth");
-    router.replace(url.pathname + url.search, { scroll: false });
-  };
+  // const openAuthModal = () => {
+  //   resetFormState();
+  //   setIsAuthModalOpen(true);
+  //   const url = new URL(window.location.href);
+  //   url.searchParams.set("modal", "auth");
+  //   router.replace(url.pathname + url.search, { scroll: false });
+  // };
 
   // Handle logout
   const handleLogout = async () => {
@@ -316,7 +264,7 @@ export default function Navbar() {
         router.replace(url.pathname + url.search, { scroll: false });
         // Close the auth modal after a brief delay to show success message
         setTimeout(() => {
-          setIsAuthModalOpen(false);
+          // setIsAuthModalOpen(false); // Removed AuthModal state
           window.location.reload(); // Refresh to update auth state
         }, 1000);
       }
@@ -428,7 +376,7 @@ export default function Navbar() {
         router.replace(url.pathname + url.search, { scroll: false });
         // Close the auth modal after a brief delay
         setTimeout(() => {
-          setIsAuthModalOpen(false);
+          // setIsAuthModalOpen(false); // Removed AuthModal state
           window.location.reload(); // Refresh to update auth state
         }, 1000);
       }
@@ -549,12 +497,12 @@ export default function Navbar() {
     }
   };
 
-  const closeAuthModal = () => {
-    setIsAuthModalOpen(false);
-    const url = new URL(window.location.href);
-    url.searchParams.delete("modal");
-    router.replace(url.pathname + url.search, { scroll: false });
-  };
+  // const closeAuthModal = () => {
+  //   setIsAuthModalOpen(false);
+  //   const url = new URL(window.location.href);
+  //   url.searchParams.delete("modal");
+  //   router.replace(url.pathname + url.search, { scroll: false });
+  // };
   return (
     <>
       <header
@@ -824,7 +772,7 @@ export default function Navbar() {
                 </div>
               ) : (
                 <button
-                  onClick={openAuthModal}
+                  onClick={() => router.push("/microestate/auth")}
                   className={`luxury-button ml-4 cursor-pointer ${scrolled ? "bg-orange-500 hover:bg-orange-600" : "bg-white/20 backdrop-blur-md hover:bg-white/30 text-white border border-white/30"}`}
                 >
                   Sign In
@@ -1016,7 +964,7 @@ export default function Navbar() {
                 <button
                   onClick={() => {
                     setIsMenuOpen(false);
-                    openAuthModal();
+                    router.push("/microestate/auth");
                   }}
                   className="block w-full px-4 py-3 bg-orange-500 text-white rounded-md font-medium text-center cursor-pointer hover:bg-orange-600 transition-colors"
                 >
@@ -1029,586 +977,7 @@ export default function Navbar() {
       </AnimatePresence>
 
       {/* Auth Modal */}
-      <AnimatePresence>
-        {isAuthModalOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsAuthModalOpen(false)}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center"
-            />
-
-            {/* Modal */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed inset-0 flex items-center justify-center z-50 p-2"
-              onClick={(_e) => _e.stopPropagation()}
-            >
-              <div className="bg-white rounded-2xl shadow-xl overflow-y-auto relative w-full max-w-md max-h-[90vh]">
-                {/* Close button */}
-                <button
-                  onClick={() => closeAuthModal()}
-                  className="absolute right-4 top-4 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full p-1 transition-all duration-200 z-10"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M18 6L6 18M6 6L18 18"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-
-                <div className="p-8">
-                  {/* Title */}
-                  <h2 className="text-2xl font-bold text-orange-500 text-center mb-6">
-                    Welcome to 100 GAJ
-                  </h2>
-
-                  {/* Main auth view (login/signup) */}
-                  {currentView === "main" && (
-                    <>
-                      {/* Tabs */}
-                      <div className="flex text-xl mb-6 border-b border-gray-200">
-                        <button
-                          onClick={() => setActiveTab("login")}
-                          className={`flex-1 pb-4 text-center font-medium ${
-                            activeTab === "login"
-                              ? "text-orange-500 border-b-2 border-orange-500"
-                              : "text-gray-500"
-                          }`}
-                        >
-                          Sign in
-                        </button>
-                        <button
-                          onClick={() => setActiveTab("signup")}
-                          className={`flex-1 pb-4 text-center font-medium ${
-                            activeTab === "signup"
-                              ? "text-orange-500 border-b-2 border-orange-500"
-                              : "text-gray-500"
-                          }`}
-                        >
-                          New account
-                        </button>
-                      </div>
-
-                      {/* Error/Success Messages */}
-                      {error && (
-                        <div className="mb-4 p-3 rounded-md bg-red-50 text-red-500 text-sm flex items-start">
-                          <AlertCircle
-                            size={16}
-                            className="mr-2 mt-0.5 flex-shrink-0"
-                          />
-                          <span>{error}</span>
-                        </div>
-                      )}
-
-                      {success && (
-                        <div className="mb-4 p-3 rounded-md bg-green-50 text-green-500 text-sm flex items-start">
-                          <CheckCircle
-                            size={16}
-                            className="mr-2 mt-0.5 flex-shrink-0"
-                          />
-                          <span>{success}</span>
-                        </div>
-                      )}
-
-                      {/* Login Form */}
-                      {activeTab === "login" && (
-                        <form onSubmit={handleLogin} className="space-y-4">
-                          <div>
-                            <label className="text-gray-700 text-sm font-medium mb-2 block">
-                              Email
-                            </label>
-                            <div className="relative">
-                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Mail size={16} className="text-gray-400" />
-                              </div>
-                              <input
-                                type="email"
-                                value={email}
-                                onChange={(_e) => setEmail(_e.target.value)}
-                                placeholder="Enter email"
-                                className="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
-                              />
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="text-gray-700 text-sm font-medium mb-2 block">
-                              Password
-                            </label>
-                            <div className="relative">
-                              <input
-                                type={showPassword ? "text" : "password"}
-                                value={password}
-                                onChange={(_e) => setPassword(_e.target.value)}
-                                placeholder="Enter password"
-                                className="w-full pl-4 pr-10 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                              >
-                                {showPassword ? (
-                                  <EyeOff size={16} className="text-gray-400" />
-                                ) : (
-                                  <Eye size={16} className="text-gray-400" />
-                                )}
-                              </button>
-                            </div>
-                          </div>
-
-                          <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
-                          >
-                            {loading ? "Signing in..." : "Sign in"}
-                          </button>
-
-                          <div className="text-center">
-                            <button
-                              type="button"
-                              onClick={() => setCurrentView("forgot-password")}
-                              className="text-orange-500 hover:text-orange-600 text-sm font-medium"
-                            >
-                              Forgot your password?
-                            </button>
-                          </div>
-                        </form>
-                      )}
-
-                      {/* Signup Form */}
-                      {activeTab === "signup" && (
-                        <form onSubmit={handleSignup} className="space-y-4">
-                          <div>
-                            <label className="text-gray-700 text-sm font-medium mb-2 block">
-                              Name
-                            </label>
-                            <input
-                              type="text"
-                              value={name}
-                              onChange={(_e) => setName(_e.target.value)}
-                              placeholder="Enter your full name"
-                              className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="text-gray-700 text-sm font-medium mb-2 block">
-                              Email
-                            </label>
-                            <div className="relative">
-                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Mail size={16} className="text-gray-400" />
-                              </div>
-                              <input
-                                type="email"
-                                value={email}
-                                onChange={(_e) => setEmail(_e.target.value)}
-                                placeholder="Enter email"
-                                className="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
-                              />
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="text-gray-700 text-sm font-medium mb-2 block">
-                              Password
-                            </label>
-                            <div className="relative">
-                              <input
-                                type={showPassword ? "text" : "password"}
-                                value={password}
-                                onChange={(_e) => {
-                                  const newPassword = _e.target.value;
-                                  setPassword(newPassword);
-                                  setPasswordStrength(calculatePasswordStrength(newPassword));
-                                }}
-                                placeholder="Create password"
-                                className="w-full pl-4 pr-10 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                              >
-                                {showPassword ? (
-                                  <EyeOff size={16} className="text-gray-400" />
-                                ) : (
-                                  <Eye size={16} className="text-gray-400" />
-                                )}
-                              </button>
-                            </div>
-                            {password && (
-                              <div className="mt-2">
-                                {/* Password Strength Bar */}
-                                <div className="flex items-center space-x-2 mb-2">
-                                  <span className="text-xs text-gray-600">Strength:</span>
-                                  <div className="flex-1 bg-gray-200 rounded-full h-2">
-                                    <div 
-                                      className={`h-2 rounded-full transition-all duration-300 ${
-                                        passwordStrength.score === 0 ? 'bg-red-500 w-1/4' :
-                                        passwordStrength.score === 1 ? 'bg-orange-500 w-2/4' :
-                                        passwordStrength.score === 2 ? 'bg-yellow-500 w-3/4' :
-                                        passwordStrength.score === 3 ? 'bg-green-400 w-full' :
-                                        'bg-green-600 w-full'
-                                      }`}
-                                    ></div>
-                                  </div>
-                                  <span className={`text-xs font-medium ${
-                                    passwordStrength.score === 0 ? 'text-red-500' :
-                                    passwordStrength.score === 1 ? 'text-orange-500' :
-                                    passwordStrength.score === 2 ? 'text-yellow-500' :
-                                    passwordStrength.score === 3 ? 'text-green-400' :
-                                    'text-green-600'
-                                  }`}>
-                                    {passwordStrength.score === 0 ? 'Weak' :
-                                     passwordStrength.score === 1 ? 'Fair' :
-                                     passwordStrength.score === 2 ? 'Good' :
-                                     passwordStrength.score === 3 ? 'Strong' :
-                                     'Very Strong'}
-                                  </span>
-                                </div>
-                                {/* Password Requirements */}
-                                {passwordStrength.feedback.length > 0 && (
-                                  <div className="space-y-1 text-xs text-gray-500">
-                                    <p className="font-medium">Still needed:</p>
-                                    {passwordStrength.feedback.map((requirement, index) => (
-                                      <p key={index} className="flex items-center">
-                                        <span className="w-1 h-1 bg-gray-400 rounded-full mr-2"></span>
-                                        {requirement}
-                                      </p>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              id="isAgent"
-                              checked={isAgent}
-                              onChange={(_e) => setIsAgent(_e.target.checked)}
-                              className="w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
-                            />
-                            <label htmlFor="isAgent" className="text-gray-700">
-                              I am a landlord or industry professional
-                            </label>
-                          </div>
-
-                          <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
-                          >
-                            {loading ? "Creating account..." : "Create account"}
-                          </button>
-
-                          <p className="text-sm text-gray-600 text-center">
-                            By submitting, I accept 100 GAJ&apos;s{" "}
-                            <a
-                              href="#"
-                              className="text-orange-500 hover:text-orange-600"
-                            >
-                              terms of use
-                            </a>
-                            .
-                          </p>
-                        </form>
-                      )}
-
-                      <div className="relative my-6">
-                        <div className="absolute inset-0 flex items-center">
-                          <div className="w-full border-t border-gray-200"></div>
-                        </div>
-                        <div className="relative flex justify-center text-sm">
-                          <span className="px-2 bg-white text-gray-500">
-                            Or connect with
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-center">
-                        <GoogleLoginButton />
-                      </div>
-                    </>
-                  )}
-
-                  {/* Forgot Password View */}
-                  {currentView === "forgot-password" && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => setCurrentView("main")}
-                        className="flex items-center text-orange-500 hover:text-orange-600 mb-6"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5 mr-1"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 19l-7-7 7-7"
-                          />
-                        </svg>
-                        Back to login
-                      </button>
-
-                      <h3 className="text-lg font-medium text-gray-900 mb-4">
-                        Reset your password
-                      </h3>
-
-                      <p className="text-gray-600 mb-6">
-                        Enter your email address and we&apos;ll send you a link
-                        to reset your password.
-                      </p>
-
-                      {/* Error/Success Messages */}
-                      {error && (
-                        <div className="mb-4 p-3 rounded-md bg-red-50 text-red-500 text-sm flex items-start">
-                          <AlertCircle
-                            size={16}
-                            className="mr-2 mt-0.5 flex-shrink-0"
-                          />
-                          <span>{error}</span>
-                        </div>
-                      )}
-
-                      {success && (
-                        <div className="mb-4 p-3 rounded-md bg-green-50 text-green-500 text-sm flex items-start">
-                          <CheckCircle
-                            size={16}
-                            className="mr-2 mt-0.5 flex-shrink-0"
-                          />
-                          <span>{success}</span>
-                        </div>
-                      )}
-
-                      <form
-                        onSubmit={handleForgotPassword}
-                        className="space-y-4"
-                      >
-                        <div>
-                          <label className="text-gray-700 text-sm font-medium mb-2 block">
-                            Email
-                          </label>
-                          <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <Mail size={16} className="text-gray-400" />
-                            </div>
-                            <input
-                              type="email"
-                              value={email}
-                              onChange={(_e) => setEmail(_e.target.value)}
-                              placeholder="Enter your email"
-                              className="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
-                            />
-                          </div>
-                        </div>
-
-                        <button
-                          type="submit"
-                          disabled={loading}
-                          className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
-                        >
-                          {loading ? "Sending..." : "Send Reset Code"}
-                        </button>
-                      </form>
-                    </>
-                  )}
-
-                  {/* Verify Email / OTP View */}
-                  {currentView === "verify-email" && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => setCurrentView("main")}
-                        className="flex items-center text-orange-500 hover:text-orange-600 mb-6"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5 mr-1"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 19l-7-7 7-7"
-                          />
-                        </svg>
-                        Back
-                      </button>
-
-                      <h3 className="text-lg font-medium text-gray-900 mb-4">
-                        Verification Code
-                      </h3>
-
-                      <p className="text-gray-600 mb-6">
-                        {activeTab === "signup"
-                          ? "Please enter the verification code sent to your email to complete your registration."
-                          : "Please enter the verification code sent to your email to reset your password."}
-                      </p>
-
-                      {/* Error/Success Messages */}
-                      {error && (
-                        <div className="mb-4 p-3 rounded-md bg-red-50 text-red-500 text-sm flex items-start">
-                          <AlertCircle
-                            size={16}
-                            className="mr-2 mt-0.5 flex-shrink-0"
-                          />
-                          <span>{error}</span>
-                        </div>
-                      )}
-
-                      {success && (
-                        <div className="mb-4 p-3 rounded-md bg-green-50 text-green-500 text-sm flex items-start">
-                          <CheckCircle
-                            size={16}
-                            className="mr-2 mt-0.5 flex-shrink-0"
-                          />
-                          <span>{success}</span>
-                        </div>
-                      )}
-
-                      {/* Verification Form */}
-                      <form
-                        onSubmit={
-                          activeTab === "signup"
-                            ? handleVerifyEmail
-                            : handleResetPassword
-                        }
-                        className="space-y-4"
-                      >
-                        <div>
-                          <label className="text-gray-700 text-sm font-medium mb-2 block">
-                            Verification Code
-                          </label>
-                          <input
-                            type="text"
-                            value={verificationCode}
-                            onChange={(_e) => {
-                              const value = _e.target.value.replace(/\D/g, ''); // Only allow digits
-                              if (value.length <= 6) {
-                                setVerificationCode(value);
-                              }
-                            }}
-                            placeholder="Enter 6-digit code"
-                            maxLength={6}
-                            className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent text-center text-lg tracking-widest font-mono"
-                          />
-                          <div className="mt-1 text-xs text-gray-500 text-center">
-                            {verificationCode.length}/6 digits
-                          </div>
-                        </div>
-
-                        {/* Additional fields for password reset */}
-                        {activeTab === "login" && (
-                          <>
-                            <div>
-                              <label className="text-gray-700 text-sm font-medium mb-2 block">
-                                New Password
-                              </label>
-                              <div className="relative">
-                                <input
-                                  type={showPassword ? "text" : "password"}
-                                  value={newPassword}
-                                  onChange={(_e) =>
-                                    setNewPassword(_e.target.value)
-                                  }
-                                  placeholder="Enter new password"
-                                  className="w-full pl-4 pr-10 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => setShowPassword(!showPassword)}
-                                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                                >
-                                  {showPassword ? (
-                                    <EyeOff
-                                      size={16}
-                                      className="text-gray-400"
-                                    />
-                                  ) : (
-                                    <Eye size={16} className="text-gray-400" />
-                                  )}
-                                </button>
-                              </div>
-                            </div>
-
-                            <div>
-                              <label className="text-gray-700 text-sm font-medium mb-2 block">
-                                Confirm New Password
-                              </label>
-                              <div className="relative">
-                                <input
-                                  type={showPassword ? "text" : "password"}
-                                  value={confirmPassword}
-                                  onChange={(_e) =>
-                                    setConfirmPassword(_e.target.value)
-                                  }
-                                  placeholder="Confirm new password"
-                                  className="w-full pl-4 pr-10 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
-                                />
-                              </div>
-                            </div>
-                          </>
-                        )}
-
-                        <button
-                          type="submit"
-                          disabled={loading}
-                          className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
-                        >
-                          {loading
-                            ? "Processing..."
-                            : activeTab === "signup"
-                              ? "Verify Email"
-                              : "Reset Password"}
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={handleResendCode}
-                          disabled={loading}
-                          className="w-full py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors"
-                        >
-                          Resend Code
-                        </button>
-                      </form>
-                    </>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      {/* Removed Auth Modal */}
     </>
   );
 }
