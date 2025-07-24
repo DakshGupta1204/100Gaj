@@ -4,15 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import {
-  Users,
   FileCheck,
   LayoutDashboard,
   LogOut,
   Menu,
   X,
-  Building2,
-  Settings,
-  Bell,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -63,21 +59,7 @@ export default function AdminLayout({
       href: "/equity/admin/kyc-verification",
       icon: FileCheck,
     },
-    {
-      name: "Users",
-      href: "/equity/admin/users",
-      icon: Users,
-    },
-    {
-      name: "Properties",
-      href: "/equity/admin/properties",
-      icon: Building2,
-    },
-    {
-      name: "Settings",
-      href: "/equity/admin/settings",
-      icon: Settings,
-    },
+    // Removed Users, Properties, and Settings
   ];
 
   return (
@@ -182,10 +164,6 @@ export default function AdminLayout({
               <span className="text-white font-medium">{adminName}</span>
             </div>
             <div className="flex items-center space-x-4">
-              <button className="text-gray-400 hover:text-white relative">
-                <Bell className="w-5 h-5" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
-              </button>
               <button
                 onClick={handleLogout}
                 className="text-gray-400 hover:text-red-500 transition-colors"
