@@ -108,6 +108,11 @@ const config: NextConfig = {
         protocol: 'https',
         hostname: 'static.news18.com',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.devdiscourse.com',
+        pathname: '/**',
       }
     ],
     formats: ['image/webp', 'image/avif'],
