@@ -6,37 +6,71 @@ import dbConnect from "@/app/(microestate)/lib/db";
 import MicroestateUser from "@/app/(microestate)/models/user";
 import { requireLandlord } from "@/app/(microestate)/middleware/auth";
 import Lease from "@/app/(microestate)/models/Lease";
-
-// // get all bills
-// export async function GET(_request: NextRequest ) {
-
-//     try {
-//         await dbConnect()
-         
-//         const bills = await UtilityBill.find()
-//         .populate("propertyId" , "title address")
-//         .populate("landlordId" , "name ")
-//         .populate("TentantId" , "name")
-
-//         if (!bills) {
-//             return NextResponse.json({
-//             message: "No Bills Found"
-//         }, {status: 200})
-//         }
-
-//         return NextResponse.json({
-//             message: "Bills Found",
-//             bills
-//         }, {status: 200})
+import MicroProperty from "@/app/(microestate)/models/Property"; // Add this import
 
 
-//     } catch (error) {
-//         console.log("Error while Getting all the bills" , error)
-//         return NextResponse.json({
-//             message: "Error occcured"
-//         }, {status: 500})
-//     }
-// }
+// get all billsexport 
+ export const GET = requireLandlord(
+  async (_request: NextRequest, context: { userId: string; userRole: string; userEmail: string }) => {
+    try {
+      await dbConnect();
+
+      const UserID = context.userId // landlord Id 
+
+      if (!UserID) {
+        return NextResponse.json(
+          { message: "User id required!" },
+          { status: 404}
+        );
+      }
+
+      const landloardUser = await MicroestateUser.findById(UserID)
+      if (!landloardUser) {
+         return NextResponse.json(
+          { message: "No user Found" },
+          { status: 404}
+        );
+      }
+
+    const bills = await UtilityBill.find({ landlordId: context.userId })
+     .populate({
+    path: "propertyId",
+    model: MicroProperty, 
+    select: "title address"
+  })
+  .populate({
+    path: "tenantId",
+    model: MicroestateUser,
+    select: "firstName lastName"
+  });
+  // .populate("tenantId", "Firstname");
+
+  
+      if (!bills || bills.length === 0) {
+        return NextResponse.json(
+          { message: "No Bills Found" },
+          { status: 200 }
+        );
+      }
+
+      return NextResponse.json(
+        {
+          message: "Bills Found",
+          bills,
+        },
+        { status: 200 }
+      );
+
+    } catch (error) {
+      console.log("Error while Getting all the bills", error);
+      return NextResponse.json(
+        { message: "Error occurred while fetching bills" },
+        { status: 500 }
+      );
+    }
+  }
+)
+
 
 // create bill
 
@@ -53,6 +87,7 @@ import Lease from "@/app/(microestate)/models/Lease";
 // take propertyId from frontend (params/url)
 // add bill
 
+
 export const POST = requireLandlord(
   async (request: NextRequest, context: { userId: string; userRole: string; userEmail: string }) => {
     try {
@@ -68,7 +103,7 @@ export const POST = requireLandlord(
         notes,
       } = await request.json();
 
-      if (!utilityType || !amount || !billingPeriod || !dueDate || !responsibleParty) {
+      if (!utilityType || !amount  || !responsibleParty) {
         return NextResponse.json(
           { message: "ALL fields are required!" },
           { status: 400 }
@@ -93,13 +128,12 @@ export const POST = requireLandlord(
           { status: 400 }
         );
       }
-
+    
       // Find active tenant assigned to the property
-      const tenant = await MicroestateUser.findOne({
-        role: "Tenant",
-        propertyId: property._id,
-        status: "active",
+      const tenant = await Lease.findOne({
+        propertyId: property.propertyId,
       });
+
 
       if (responsibleParty === "tenant" && !tenant) {
         return NextResponse.json(
@@ -116,16 +150,16 @@ export const POST = requireLandlord(
       }
 
       const newBill = await UtilityBill.create({
-        propertyId: property._id,
+        propertyId: property.propertyId,
         landlordId: UserId,
-        tenantId: tenant._id,
+        tenantId: tenant.tenantId,
         utilityType,
         amount,
         billingPeriod: {
-          start: new Date(billingPeriod.start),
-          end: new Date(billingPeriod.end),
+          start: billingPeriod.start,
+          end:  billingPeriod.end,
         },
-        dueDate: new Date(dueDate),
+        dueDate,
         status: "pending",
         responsibleParty,
         billDocument,

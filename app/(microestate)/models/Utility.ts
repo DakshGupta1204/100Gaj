@@ -19,7 +19,7 @@ export interface IUtilityBill extends Document {
   utilityType: UtilityType;
   amount: number;
   billingPeriod: IBillingPeriod;
-  dueDate: Date;
+  dueDate?: Date;
   paidDate?: Date;
   status: UtilityStatus;
    paymentProof?: {
@@ -106,7 +106,7 @@ const utilityBillSchema = new Schema<IUtilityBill>(
         required: [true, "Billing period end date is required"],
         validate: {
           validator: function(this: IUtilityBill, value: Date) {
-            return value > this.billingPeriod.start;
+            return value > this.billingPeriod?.start;
           },
           message: "Billing period end date must be after start date",
         },
@@ -180,10 +180,10 @@ const utilityBillSchema = new Schema<IUtilityBill>(
 );
 
 // Instance Methods
-utilityBillSchema.methods.isOverdue = function(this: IUtilityBill): boolean {
-  const today = new Date();
-  return this.dueDate < today && this.status !== "paid";
-};
+// utilityBillSchema.methods.isOverdue = function(this: IUtilityBill): boolean {
+//   const today = new Date();
+//   return this.dueDate < today && this.status !== "paid";
+// };
 
 utilityBillSchema.methods.markAsPaid = function(this: IUtilityBill, paidDate?: Date): void {
   this.status = "paid";
@@ -336,9 +336,9 @@ utilityBillSchema.pre<IUtilityBill>("save", function(next) {
   const now = new Date();
   
   // Auto-update status to overdue if past due date and not paid
-  if (this.dueDate < now && this.status === "pending") {
-    this.status = "overdue";
-  }
+  // if (this.dueDate < now && this.status === "pending") {
+  //   this.status = "overdue";
+  // }
   
   // Set paid date if marking as paid
   if (this.status === "paid" && !this.paidDate) {
@@ -368,7 +368,7 @@ export interface CreateUtilityBillInput {
   tenantId?: string;
   utilityType: UtilityType;
   amount: number;
-  billingPeriod: IBillingPeriod;
+  billingPeriod?: IBillingPeriod;
   dueDate: Date;
   responsibleParty: ResponsibleParty;
   billDocument?: string;
@@ -387,11 +387,22 @@ export interface UpdateUtilityBillInput {
 
 export interface UtilityBillResponse {
   _id: string;
-  propertyId: string;
+  propertyId:{
+    address: {
+      city: string,
+      country: string,
+    }
+    title: string
+  }
   landlordId: string;
-  tenantId?: string;
+  tenantId?: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+  };
   utilityType: UtilityType;
   amount: number;
+  dueDateFormatted: string,
   billingPeriod: IBillingPeriod;
   dueDate: Date;
   paidDate?: Date;

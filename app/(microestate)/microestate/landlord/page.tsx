@@ -8,12 +8,16 @@ import Background from '../../_components/Background';
 import { useAuth } from '../../Context/AuthProvider';
 import { motion } from 'framer-motion';
 import CountUp from 'react-countup';
-
-const leaseProgress = 0.6; // 60% complete
+import axios from 'axios';
+import { format } from 'date-fns';
+import UtilityBill, { UtilityBillResponse } from '../../models/Utility';
 
 export default function LandlordDashboard() {
   const { user } = useAuth();
+
+
   const [landlordName, setLandlordName] = useState('');
+
   const [dashboardData, setDashboardData] = useState({
     totalProperties: 6,
     monthlyIncome: 120000,
@@ -88,6 +92,8 @@ export default function LandlordDashboard() {
     ]
   });
 
+const [billinfo, setbillinfo] = useState<UtilityBillResponse[]>([]);
+const [billid , setbillId] = useState("") 
   const [showCreateBill, setShowCreateBill] = useState(false);
   const [newBill, setNewBill] = useState({
     utilityType: '',
@@ -127,10 +133,36 @@ export default function LandlordDashboard() {
     }
   };
 
+  // get all bills status which landlord has created 
+  useEffect(() => {
+const Getallbills = async() => {
+    try {
+     const response = await axios.get('/microestate/api/bills')
+      const bills = response.data.bills;
+      console.log("Bill found Successfully", bills);
+
+      const formattedBills = bills.map((bill: { dueDate: string | number | Date; }) => ({
+        ...bill,
+        dueDateFormatted: format(new Date(bill.dueDate), 'dd/MM/yy'),
+      }));
+
+    console.log("Bill found Sucessfully" ,  formattedBills )
+    setbillinfo(formattedBills)
+   setbillId(response.data.bills[0]._id)
+
+
+    } catch (error) {
+      console.log("Error while getting all bills" , error)
+    }
+  }
+  Getallbills()
+  } , [])
+
+
   const handleCreateBill = async () => {
     try {
       // Validate required fields
-      if (!newBill.utilityType || !newBill.amount || !newBill.billingPeriod.start || !newBill.billingPeriod.end || !newBill.dueDate || !newBill.responsibleParty) {
+      if (!newBill.utilityType || !newBill.amount || !newBill.dueDate || !newBill.responsibleParty) {
         alert('Please fill in all required fields');
         return;
       }
@@ -149,8 +181,10 @@ export default function LandlordDashboard() {
         notes: newBill.notes
       };
 
-      // TODO: API call to create bill
+      
       console.log('Creating bill:', billData);
+       const response = await axios.post('/microestate/api/bills' )
+       console.log(response , "Bill created Sucessfully")
       
       // Reset form
       setShowCreateBill(false);
@@ -168,10 +202,17 @@ export default function LandlordDashboard() {
     }
   };
 
-  const handleMarkAsPaid = async (billId: number) => {
+  const handleMarkAsPaid = async () => {
     try {
-      // TODO: API call to mark bill as paid
-      console.log('Marking bill as paid:', billId);
+
+      const response = await axios.post('/microestate/api/bills/mark-as-paid' ,
+      {
+        billId: billid
+      }
+      )
+      console.log('marked sucessfully', response);
+
+
     } catch (error) {
       console.error('Error marking bill as paid:', error);
     }
@@ -379,7 +420,7 @@ export default function LandlordDashboard() {
             </div>
           </div>
         </section>
-        {/* Lease Progress Section */}
+        {/* Lease Progress Section
         <section className="mt-8 bg-glass border border-transparent border-gradient-to-r from-orange-500 to-red-500 shadow-xl rounded-2xl p-6 animate-fadeIn">
           <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
             <Calendar className="w-5 h-5 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500" />
@@ -407,7 +448,11 @@ export default function LandlordDashboard() {
               <div className="text-sm text-gray-400">Monthly Rent</div>
             </div>
           </div>
-        </section>
+        </section> */}
+
+
+
+
 
                  {/* Utility Bills Section */}
          <section className="mt-8 bg-gradient-to-br from-[#1a1a1f] via-[#1f1f25] to-[#2a2a2f] border border-orange-500/20 shadow-2xl rounded-2xl p-8 animate-fadeIn relative overflow-hidden">
@@ -511,45 +556,43 @@ export default function LandlordDashboard() {
                  </div>
                  <div>
                    <h3 className="text-xl font-bold text-white">Pending Bills</h3>
-                   <p className="text-sm text-gray-400">{utilityBills.pending.length} bills awaiting payment</p>
+                   <p className="text-sm text-gray-400"> bills awaiting payment</p>
                  </div>
                </div>
                <div className="space-y-4">
-                 {utilityBills.pending.map((bill) => (
+                 {billinfo.map((bill) => (
                    <motion.div 
-                     key={bill.id} 
+                     key={bill._id} 
                      className="bg-gradient-to-r from-yellow-500/5 to-orange-500/5 border border-yellow-500/20 rounded-xl p-4 backdrop-blur-sm hover:shadow-lg transition-all duration-300 group"
                      whileHover={{ scale: 1.02, y: -2 }}
                    >
                      <div className="flex items-center justify-between mb-3">
                        <div className="flex items-center gap-3">
-                         <div className="p-2 bg-yellow-500/20 rounded-lg group-hover:bg-yellow-500/30 transition-colors">
-                           {getUtilityIcon(bill.utilityType)}
-                         </div>
+                         
                          <div>
-                           <span className="text-white font-semibold capitalize">{bill.utilityType}</span>
-                           <div className="text-sm text-gray-400">{bill.tenantName} • {bill.property}</div>
+                           <span className="text-white font-semibold capitalize">{bill?.utilityType} </span>
+                           <div className="text-sm text-gray-400"> {bill?.tenantId?.firstName} {bill.tenantId?.lastName} <br></br> <h1>property assigned</h1> {bill.propertyId.title}  <br></br> <h1> address</h1> {bill.propertyId.address.city} {bill.propertyId.address.country}</div>
                          </div>
                        </div>
-                       <span className="text-xl font-bold text-yellow-400">₹{bill.amount.toLocaleString()}</span>
+                       <span className="text-xl font-bold text-yellow-400"> {bill?.amount}</span>
                      </div>
                      <div className="flex items-center justify-between text-sm mb-4">
-                       <span className="text-yellow-400 font-medium">Due: {new Date(bill.dueDate).toLocaleDateString()}</span>
+                       <span className="text-yellow-400 font-medium">Due Date: {bill?.dueDateFormatted} </span>
                        <span className="text-gray-500 bg-gray-800/50 px-2 py-1 rounded-full text-xs capitalize">{bill.responsibleParty}</span>
                      </div>
                      <div className="flex gap-3">
                        <Button 
                          size="sm" 
-                         onClick={() => handleMarkAsPaid(bill.id)}
-                         className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                                 className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                                 onClick={() => handleMarkAsPaid()}
                        >
                          <CheckCircle className="w-4 h-4 mr-2" />
                          Mark Paid
                        </Button>
-                       <Button size="sm" variant="outline" className="border-gray-600 text-gray-300 text-sm px-4 py-2 rounded-lg hover:bg-gray-700/50 hover:border-orange-500/50 transition-all duration-300">
+                       {/* <Button size="sm" variant="outline" className="border-gray-600 text-gray-300 text-sm px-4 py-2 rounded-lg hover:bg-gray-700/50 hover:border-orange-500/50 transition-all duration-300">
                          <Edit className="w-4 h-4 mr-2" />
                          Edit
-                       </Button>
+                       </Button> */}
                      </div>
                    </motion.div>
                  ))}
@@ -568,6 +611,7 @@ export default function LandlordDashboard() {
                  </div>
                </div>
                <div className="space-y-4">
+
                  {utilityBills.overdue.map((bill) => (
                    <motion.div 
                      key={bill.id} 
@@ -581,7 +625,7 @@ export default function LandlordDashboard() {
                          </div>
                          <div>
                            <span className="text-white font-semibold capitalize">{bill.utilityType}</span>
-                           <div className="text-sm text-gray-400">{bill.tenantName} • {bill.property}</div>
+                           <div className="text-sm text-gray-400"> {bill.tenantName} • {bill.property} </div>
                          </div>
                        </div>
                        <span className="text-xl font-bold text-red-400">₹{bill.amount.toLocaleString()}</span>
@@ -593,15 +637,11 @@ export default function LandlordDashboard() {
                      <div className="flex gap-3">
                        <Button 
                          size="sm" 
-                         onClick={() => handleMarkAsPaid(bill.id)}
+                         onClick={() => handleMarkAsPaid()}
                          className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                        >
                          <CheckCircle className="w-4 h-4 mr-2" />
                          Mark Paid
-                       </Button>
-                       <Button size="sm" variant="outline" className="border-gray-600 text-gray-300 text-sm px-4 py-2 rounded-lg hover:bg-gray-700/50 hover:border-orange-500/50 transition-all duration-300">
-                         <Mail className="w-4 h-4 mr-2" />
-                         Send Reminder
                        </Button>
                      </div>
                    </motion.div>
@@ -611,7 +651,7 @@ export default function LandlordDashboard() {
            </div>
 
                      {/* Recent Paid Bills */}
-           <div className="mt-8 bg-gradient-to-br from-[#1a1a1f] to-[#1f1f25] border border-green-500/20 rounded-2xl p-6 shadow-lg">
+           {/* <div className="mt-8 bg-gradient-to-br from-[#1a1a1f] to-[#1f1f25] border border-green-500/20 rounded-2xl p-6 shadow-lg">
              <div className="flex items-center gap-3 mb-6">
                <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
                  <CheckCircle className="w-5 h-5 text-white" />
@@ -647,7 +687,7 @@ export default function LandlordDashboard() {
                  </motion.div>
                ))}
              </div>
-           </div>
+           </div> */}
         </div>
       </section>
 
@@ -680,7 +720,6 @@ export default function LandlordDashboard() {
                      </div>
                      <div className="flex-1 min-w-0">
                        <h3 className="text-2xl font-bold text-white drop-shadow-sm mb-1">Create Utility Bill</h3>
-                       {/* <p className="text-sm text-gray-300 font-medium leading-relaxed break-words">Add a new utility bill for your tenant</p> */}
                      </div>
                    </div>
                    <Button 
