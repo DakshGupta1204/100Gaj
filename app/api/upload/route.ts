@@ -1,48 +1,53 @@
-import { NextRequest, NextResponse } from 'next/server';
-import ImageKit from 'imagekit';
+import { NextRequest, NextResponse } from "next/server";
+import ImageKit from "imagekit";
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 // Initialize ImageKit
 const imagekit = new ImageKit({
-  publicKey: process.env.IMAGEKIT_PUBLIC_KEY || '',
-  privateKey: process.env.IMAGEKIT_PRIVATE_KEY || '',
-  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT || '',
+  publicKey: process.env.IMAGEKIT_PUBLIC_KEY || "",
+  privateKey: process.env.IMAGEKIT_PRIVATE_KEY || "",
+  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT || "",
 });
 
 // Helper function to convert File to Base64
 const fileToBase64 = async (file: File): Promise<string> => {
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
-  return buffer.toString('base64');
+  return buffer.toString("base64");
 };
 
 // Helper function to generate a unique filename
 const generateUniqueFileName = (originalName: string): string => {
   const timestamp = Date.now();
   const randomString = Math.random().toString(36).substring(2, 8);
-  const extension = originalName.split('.').pop();
+  const extension = originalName.split(".").pop();
   return `${timestamp}-${randomString}.${extension}`;
 };
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const file = formData.get('file') as File;
+    const file = formData.get("file") as File;
 
     if (!file) {
-      return NextResponse.json(
-        { error: 'No file uploaded' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
     // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "application/pdf",
+    ];
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { error: 'Invalid file type. Only JPG, JPEG, and PNG files are allowed.' },
+        {
+          error:
+            "Invalid file type. Only JPG, JPEG, and PNG files are allowed.",
+        },
         { status: 400 }
       );
     }
@@ -51,7 +56,7 @@ export async function POST(request: NextRequest) {
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: 'File size too large. Maximum size is 5MB.' },
+        { error: "File size too large. Maximum size is 5MB." },
         { status: 400 }
       );
     }
@@ -64,7 +69,7 @@ export async function POST(request: NextRequest) {
     const uploadResponse = await imagekit.upload({
       file: base64Data,
       fileName: uniqueFileName,
-      folder: '/100gaj',
+      folder: "/100gaj",
       useUniqueFileName: true,
     });
 
@@ -73,22 +78,21 @@ export async function POST(request: NextRequest) {
         success: true,
         url: uploadResponse.url,
         thumbnailUrl: uploadResponse.thumbnailUrl,
-        fileId: uploadResponse.fileId
+        fileId: uploadResponse.fileId,
       }),
       {
         status: 200,
         headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type",
         },
       }
     );
   } catch (error: any) {
-
     return NextResponse.json(
-      { error: error.message || 'Internal server error during file upload' },
+      { error: error.message || "Internal server error during file upload" },
       { status: 500 }
     );
   }
@@ -98,9 +102,9 @@ export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
     },
   });
 }

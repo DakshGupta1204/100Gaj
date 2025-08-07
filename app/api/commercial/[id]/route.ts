@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/app/lib/mongodb";
-import CommercialProperties from "@/app/models/CommercialProperty";
+import { CommercialProperty } from "@/app/models/CommercialProperty";
 import { Types } from "mongoose";
 
 export async function GET(req: NextRequest) {
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 
     await connectDB();
 
-    const property = (await CommercialProperties.findById(id).lean()) as {
+    const property = (await CommercialProperty.findById(id).lean()) as {
       _id: Types.ObjectId;
       [key: string]: any;
     };

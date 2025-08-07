@@ -20,6 +20,13 @@ import Link from "next/link";
 import clsx from "clsx";
 import Image from "next/image";
 
+interface PropertyImage {
+  fileName: string;
+  fileUrl: string;
+  fileSize: number;
+  _id?: string;
+}
+
 interface Property {
   id: string;
   title: string;
@@ -31,7 +38,7 @@ interface Property {
   currentYield: number;
   predictedAppreciation: number;
   riskLevel: "Low" | "Medium" | "High";
-  images: string[];
+  images: PropertyImage[];
   description: string;
   monthlyRental: number;
   currentOccupancy: number;
@@ -136,7 +143,9 @@ export default function PropertyCard({ property }: PropertyCardProps) {
         <div className="relative w-full h-60 rounded-2xl overflow-hidden">
           {property.images && property.images.length > 0 ? (
             <Image
-              src={property.images[0] || "/images/placeholder-property.jpg"}
+              src={
+                property.images[0].fileUrl || "/images/placeholder-property.jpg"
+              }
               alt={property.title}
               fill
               className="object-cover"
@@ -193,8 +202,8 @@ export default function PropertyCard({ property }: PropertyCardProps) {
           <div className="flex justify-between items-center mb-3">
             <span className="text-sm text-gray-400">Available Shares</span>
             <span className="text-sm font-semibold text-white">
-              {property.availableShares.toLocaleString()} /{" "}
-              {property.totalShares.toLocaleString()}
+              {property?.availableShares?.toLocaleString()} /{" "}
+              {property?.totalShares?.toLocaleString()}
             </span>
           </div>
 
@@ -216,7 +225,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
           <div className="flex justify-between items-center mb-4 p-3 bg-purple-400/30 text-white rounded-xl border border-purple-400/40">
             <span className="text-sm text-white">Price per Share</span>
             <span className="text-xl font-bold text-white">
-              ₹{property.pricePerShare.toLocaleString()}
+              ₹{property.pricePerShare?.toLocaleString()}
             </span>
           </div>
         </div>

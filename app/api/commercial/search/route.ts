@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/app/lib/mongodb";
 import { Types } from "mongoose";
-import CommercialProperty from "@/app/models/CommercialProperty";
+import { CommercialProperty } from "@/app/models/CommercialProperty";
 
 export async function GET(req: NextRequest) {
   try {
