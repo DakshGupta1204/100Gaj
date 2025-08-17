@@ -19,16 +19,49 @@ export const GET = requireTenant( async (request: NextRequest, user: { userId: s
         Property; // Registers MicroProperty model
         MicroestateUser; // Registers MicroestateUser model
         
-        const response =  await Lease.findByTenant(userId);
-        console.log("📋 Leases found:", response?.length || 0);
+        const allLeases = await Lease.findByTenant(userId);
+        console.log("📋 All leases found:", allLeases?.length || 0);
 
-        if (!response || response.length === 0) {
+        if (!allLeases || allLeases.length === 0) {
             console.log("❌ No leases found for tenant:", userId);
-            return NextResponse.json({ message: "No leases found for this tenant" }, { status: 404 });
+            return NextResponse.json({ 
+                message: "No property assigned to this tenant account",
+                activeLeases: [],
+                hasTerminatedLeases: false
+            }, { status: 404 });
         }
 
-        console.log("✅ Returning leases for tenant:", userId);
-        return NextResponse.json(response, { status: 200 });
+        // Separate active and terminated leases
+        const activeLeases = allLeases.filter(lease => 
+            lease.status === 'active' || lease.status === 'draft'
+        );
+        const terminatedLeases = allLeases.filter(lease => 
+            lease.status === 'terminated'
+        );
+
+        // If no active leases but has terminated leases, tenant was removed
+        if (activeLeases.length === 0 && terminatedLeases.length > 0) {
+            console.log("⚠️ Tenant has terminated leases but no active ones - tenant was removed");
+            return NextResponse.json({ 
+                message: "You have been removed from your property. Please contact your landlord for more information.",
+                activeLeases: [],
+                hasTerminatedLeases: true,
+                terminatedLeases: terminatedLeases
+            }, { status: 200 });
+        }
+
+        // If no active leases and no terminated leases
+        if (activeLeases.length === 0) {
+            console.log("❌ No active leases found for tenant:", userId);
+            return NextResponse.json({ 
+                message: "No active property assigned to this tenant account",
+                activeLeases: [],
+                hasTerminatedLeases: false
+            }, { status: 404 });
+        }
+
+        console.log("✅ Returning active leases for tenant:", userId);
+        return NextResponse.json(activeLeases, { status: 200 });
     } catch (error) {
         console.log("Error while fetching leases:", error);
         return NextResponse.json({ message: "Error while fetching leases" }, { status: 500 });

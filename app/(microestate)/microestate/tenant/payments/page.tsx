@@ -5,6 +5,9 @@ import { User, Home, Calendar, Phone, CreditCard, QrCode, Info, CheckCircle, Ale
 import TenantNavbar from "../components/TenantNavbar";
 import TenantFooter from "../components/TenantFooter";
 import { motion } from "framer-motion";
+import { useTenantLeaseStatus } from "../../hooks/useTenantLeaseStatus";
+import { useAuth } from "@/app/(microestate)/Context/AuthProvider";
+
 
 // TypeScript interfaces
 interface UserData {
@@ -60,40 +63,33 @@ interface Lease {
 }
 
 export default function TenantPaymentsPage() {
+  const { user } = useAuth();
+  const { status: leaseStatus, loading: leaseLoading, error: leaseError } = useTenantLeaseStatus(user?.id);
+  
   const [leaseData, setLeaseData] = useState<Lease | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showQRPopup, setShowQRPopup] = useState(false);
   const [showContactPopup, setShowContactPopup] = useState(false);
 
-  // Fetch tenant lease data
+  // Use the lease status from the hook
   useEffect(() => {
-    const fetchLeaseData = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('/microestate/api/tenants/property');
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch lease data');
-        }
-        
-        const data = await response.json();
-        
-        if (data && data.length > 0) {
-          setLeaseData(data[0]); // Assuming we get the first lease
-        } else {
-          setError('No lease data found');
-        }
-      } catch (err) {
-        console.error('Error fetching lease data:', err);
-        setError('Failed to load lease information');
-      } finally {
+    if (!leaseLoading) {
+      if (leaseStatus.wasRemoved) {
+        setError("You have been removed from your property. Payment functionality is not available.");
+        setLoading(false);
+        return;
+      }
+      
+      if (leaseStatus.hasActiveLeases && leaseStatus.leases && leaseStatus.leases.length > 0) {
+        setLeaseData(leaseStatus.leases[0]);
+        setLoading(false);
+      } else {
+        setError(leaseError || "No active lease found for your account.");
         setLoading(false);
       }
-    };
-
-    fetchLeaseData();
-  }, []);
+    }
+  }, [leaseStatus, leaseLoading, leaseError]);
 
   // Calculate payment overview from lease data
   const getPaymentOverview = () => {
@@ -131,12 +127,40 @@ export default function TenantPaymentsPage() {
 
   const paymentOverview = getPaymentOverview();
 
-  if (loading) {
+  if (loading || leaseLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex flex-col overflow-x-hidden mt-[72px]">
         <TenantNavbar />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-white text-xl">Loading lease information...</div>
+        </div>
+        <TenantFooter />
+      </div>
+    );
+  }
+
+  if (leaseStatus.wasRemoved) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex flex-col overflow-x-hidden mt-[72px]">
+        <TenantNavbar />
+        <div className="flex-1 flex items-center justify-center px-4">
+          <motion.div
+            className="bg-red-500/10 border-2 border-red-500/30 rounded-2xl p-8 max-w-md mx-auto text-center"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-4 text-red-400">Payment Access Unavailable</h2>
+            <p className="text-gray-300 mb-6">{leaseStatus.removalMessage}</p>
+            <div className="bg-white/5 rounded-lg p-4 mb-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Payment Services Suspended</h3>
+              <p className="text-sm text-gray-400">
+                Since you have been removed from the property, payment functionality is no longer available. 
+                Please contact your former landlord for any outstanding payment matters.
+              </p>
+            </div>
+          </motion.div>
         </div>
         <TenantFooter />
       </div>

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { User, Home, Mail, Phone, Eye, Trash2, Filter, Loader2 } from 'lucide-react';
+import { User, Home, Mail, Phone, Eye, Trash2, Filter, Loader2, X, Calendar, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,6 +45,7 @@ export default function TenantsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [deletingTenantId, setDeletingTenantId] = useState<string | null>(null);
+  const [viewingTenant, setViewingTenant] = useState<Tenant | null>(null);
 
   useEffect(() => {
     if (session?.user?.id) {
@@ -102,8 +103,8 @@ export default function TenantsPage() {
   };
 
   const filteredTenants = propertyFilter === 'all'
-    ? tenants
-    : tenants.filter(t => t.property?._id === propertyFilter);
+    ? tenants.filter(t => t.status !== 'inactive') // Exclude inactive/terminated tenants
+    : tenants.filter(t => t.property?._id === propertyFilter && t.status !== 'inactive');
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-black via-gray-900 to-black">
@@ -225,8 +226,13 @@ export default function TenantsPage() {
 
                   {/* Actions */}
                   <div className="flex gap-3 pt-3 border-t border-[#2a2a2f]">
-                    <Button size="sm" variant="outline" className="flex-1 border-transparent transition-colors hover:border-transparent">
-                      <Eye className="w-4 h-4 mr-2 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500" />
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="flex-1 border-orange-500/50 text-orange-400 hover:bg-orange-500/10 hover:border-orange-400 transition-colors"
+                      onClick={() => setViewingTenant(tenant)}
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
                       <span className="text-sm">View</span>
                     </Button>
                     <Button 
@@ -316,8 +322,13 @@ export default function TenantsPage() {
                       </td>
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-2">
-                          <Button size="sm" variant="outline" className="border-transparent transition-colors hover:border-transparent">
-                            <Eye className="w-4 h-4 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500" />
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="border-orange-500/50 text-orange-400 hover:bg-orange-500/10 hover:border-orange-400 transition-colors"
+                            onClick={() => setViewingTenant(tenant)}
+                          >
+                            <Eye className="w-4 h-4" />
                           </Button>
                           <Button 
                             size="sm" 
@@ -355,6 +366,140 @@ export default function TenantsPage() {
           </section>
         )}
       </div>
+
+      {/* Tenant Detail Modal */}
+      {viewingTenant && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
+            {/* Close button */}
+            <button
+              onClick={() => setViewingTenant(null)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            {/* Header */}
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-2xl select-none">
+                  {viewingTenant.name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-white">{viewingTenant.name}</h2>
+                <p className="text-gray-400">Tenant ID: {viewingTenant._id.slice(-6)}</p>
+              </div>
+            </div>
+
+            {/* Tenant Information */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              {/* Contact Info */}
+              <div className="bg-[#0f0f12] rounded-xl p-4">
+                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                  <User className="w-5 h-5 text-orange-400" />
+                  Contact Information
+                </h3>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-gray-300">
+                    <Mail className="w-4 h-4 text-orange-400" />
+                    <span className="text-sm">{viewingTenant.email}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-300">
+                    <Phone className="w-4 h-4 text-orange-400" />
+                    <span className="text-sm">{viewingTenant.phone}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Property Info */}
+              <div className="bg-[#0f0f12] rounded-xl p-4">
+                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                  <Home className="w-5 h-5 text-orange-400" />
+                  Property Details
+                </h3>
+                <div className="space-y-2">
+                  <div className="text-white font-medium">{viewingTenant.property?.title || 'N/A'}</div>
+                  <div className="text-gray-400 text-sm">
+                    {viewingTenant.property?.address ? 
+                      (typeof viewingTenant.property.address === 'string' ? 
+                        viewingTenant.property.address : 
+                        [
+                          viewingTenant.property.address.street,
+                          viewingTenant.property.address.city,
+                          viewingTenant.property.address.state
+                        ].filter(Boolean).join(', ')
+                      ) : 'N/A'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Lease Info */}
+              <div className="bg-[#0f0f12] rounded-xl p-4">
+                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-orange-400" />
+                  Lease Information
+                </h3>
+                <div className="space-y-2">
+                  <div className="text-gray-300 text-sm">
+                    <span className="text-gray-400">Start Date:</span> {new Date(viewingTenant.leaseStart).toLocaleDateString()}
+                  </div>
+                  <div className="text-gray-300 text-sm">
+                    <span className="text-gray-400">End Date:</span> {new Date(viewingTenant.leaseEnd).toLocaleDateString()}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-400 text-sm">Status:</span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      viewingTenant.status === 'active' ? 'bg-green-500/20 text-green-400' :
+                      viewingTenant.status === 'overdue' ? 'bg-red-500/20 text-red-400' :
+                      'bg-gray-500/20 text-gray-400'
+                    }`}>
+                      {viewingTenant.status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Info */}
+              <div className="bg-[#0f0f12] rounded-xl p-4">
+                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-orange-400" />
+                  Payment Information
+                </h3>
+                <div className="space-y-2">
+                  <div className="text-green-400 font-semibold text-lg">
+                    ₹{viewingTenant.rentAmount?.toLocaleString() || 'N/A'}
+                  </div>
+                  <div className="text-gray-400 text-sm">Monthly Rent</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3">
+              <Button
+                className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
+                onClick={() => {
+                  // Add edit functionality here
+                  alert('Edit functionality coming soon');
+                }}
+              >
+                Edit Tenant
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                onClick={() => {
+                  setViewingTenant(null);
+                  handleDeleteTenant(viewingTenant);
+                }}
+              >
+                Remove Tenant
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 

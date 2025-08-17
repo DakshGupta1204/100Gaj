@@ -302,7 +302,7 @@ export const POST = requireLandlord(
         },
         { status: 201 }
       );
-    } catch (error) {
+    } catch (error: any) {
       // Abort transaction on any error
       if (session.inTransaction()) {
         await session.abortTransaction();
@@ -433,7 +433,7 @@ export const GET = requireLandlord(
         },
         { status: 200 }
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error("❌ Error in GET /api/properties/[id]/tenant:", error);
       return NextResponse.json(
         {
@@ -495,7 +495,9 @@ export const DELETE = requireLandlord(
       const activeLeases = await Lease.find({
         propertyId,
         status: { $in: ["active", "draft"] },
-      }).session(session);
+      })
+      .populate("tenantId", "firstName lastName email phone")
+      .session(session);
 
       if (!activeLeases || activeLeases.length === 0) {
         await session.abortTransaction();
@@ -507,6 +509,16 @@ export const DELETE = requireLandlord(
           { status: 404 }
         );
       }
+
+      // Store tenant information for notifications before terminating leases
+      const tenantsToNotify = activeLeases.map(lease => {
+        const tenant = lease.tenantId as any; // Populated tenant object
+        return {
+          tenantId: tenant._id,
+          tenantName: `${tenant.firstName} ${tenant.lastName}`,
+          tenantEmail: tenant.email
+        };
+      });
 
       // Terminate all active leases
       await Lease.updateMany(
@@ -524,6 +536,60 @@ export const DELETE = requireLandlord(
       // Commit transaction
       await session.commitTransaction();
 
+      // Send notifications to removed tenants (outside transaction)
+      for (const tenant of tenantsToNotify) {
+        try {
+          const notificationMessage = `You have been removed from the property "${property.title}". Your lease has been terminated. If you have questions about this change, please contact your landlord for more information.`;
+          
+          // Get landlord details for notification
+          const landlordUser = await MicroestateUser.findById(userId);
+          const landlordName = landlordUser ? `${landlordUser.firstName} ${landlordUser.lastName}` : "Your Landlord";
+
+          // Send email notification directly instead of using axios
+          const emailSubject = `Property Assignment Update - ${property.title}`;
+          const emailBody = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+              <div style="background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <div style="text-align: center; margin-bottom: 30px;">
+                  <h1 style="color: #dc3545; margin: 0; font-size: 24px;">Property Assignment Update</h1>
+                </div>
+                
+                <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                  <strong>Important Notice:</strong> Your property assignment has been updated.
+                </div>
+                
+                <p style="color: #333; line-height: 1.6; font-size: 16px;">Dear ${tenant.tenantName},</p>
+                
+                <p style="color: #333; line-height: 1.6; font-size: 16px;">${notificationMessage}</p>
+                
+                <div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+                  <h3 style="color: #495057; margin-top: 0;">Property Details:</h3>
+                  <p style="margin: 5px 0; color: #6c757d;"><strong>Property:</strong> ${property.title}</p>
+                  <p style="margin: 5px 0; color: #6c757d;"><strong>Landlord:</strong> ${landlordName}</p>
+                  <p style="margin: 5px 0; color: #6c757d;"><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+                </div>
+                
+                <p style="color: #333; line-height: 1.6; font-size: 16px;">
+                  If you have any questions or concerns about this change, please contact your landlord directly.
+                </p>
+                
+                <hr style="border: none; border-top: 1px solid #dee2e6; margin: 30px 0;">
+                
+                <p style="color: #6c757d; font-size: 14px; text-align: center; margin: 0;">
+                  This is an automated notification from the MicroEstate platform.
+                </p>
+              </div>
+            </div>
+          `;
+
+          await sendEmail(tenant.tenantEmail, emailSubject, emailBody);
+          console.log(`✅ Notification sent to tenant ${tenant.tenantEmail}`);
+        } catch (notificationError) {
+          console.error(`❌ Failed to send notification to ${tenant.tenantEmail}:`, notificationError);
+          // Don't fail the entire operation if notification fails
+        }
+      }
+
       return NextResponse.json(
         {
           success: true,
@@ -539,7 +605,7 @@ export const DELETE = requireLandlord(
         },
         { status: 200 }
       );
-    } catch (error) {
+    } catch (error: any) {
       if (session.inTransaction()) {
         await session.abortTransaction();
       }

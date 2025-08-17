@@ -13,6 +13,7 @@ interface IUser {
   resetPasswordTokenExpiry?: Date;
   phone?: string;
   role: string; // user, agent, admin, builder
+  admin?: boolean; // Admin privileges flag
   bio?: string;
   address?: {
     street?: string;
@@ -127,10 +128,11 @@ const userSchema = new Schema<IUser>(
       enum: ["user", "agent", "admin", "builder"],
       default: "user",
     },
-    bio: {
-      type: String,
-      maxlength: 1000,
+    admin: {
+      type: Boolean,
+      default: false,
     },
+    bio: String,
     address: {
       street: String,
       city: String,

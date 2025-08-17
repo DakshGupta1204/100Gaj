@@ -35,16 +35,36 @@ export default function LandlordNavbar() {
   }, [dropdownOpen]);
 
   const handleLogout = async () => {
-    await signOut({
-      redirect: false, // We will handle the redirect manually
-      callbackUrl: "/microestate", // Tell next-auth where to go after signout is complete
-    });
+    try {
+      // Clear microestate-specific storage
+      localStorage.removeItem("microestate_user");
+      localStorage.removeItem("userRole");
+      
+      // Clear main platform authentication as well
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("authToken");
+        localStorage.removeItem("authToken");
+        document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      }
 
-    localStorage.removeItem("microestate_user");
-     localStorage.removeItem("userRole");
+      // Sign out from NextAuth
+      await signOut({
+        redirect: false,
+        callbackUrl: "/microestate",
+      });
+      
+      // Dispatch custom logout event for other components
+      window.dispatchEvent(new CustomEvent("userLogout"));
 
-    router.push("/microestate");
-    toast.success("You have been logged out.");
+      // Redirect to microestate home
+      router.push("/microestate");
+      toast.success("You have been logged out.");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Error during logout");
+      // Still redirect even if there's an error
+      router.push("/microestate");
+    }
   };
 
   return (

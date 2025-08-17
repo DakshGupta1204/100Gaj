@@ -1,16 +1,78 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import EquityNavigation from "@/app/equity/components/EquityNavigation";
+import { toast } from "sonner";
+import { UserAPI } from "@/app/lib/api-helpers";
 
 export default function AdminKycPage() {
+  const router = useRouter();
   const [pending, setPending] = useState<any[]>([]);
   const [reviewed, setReviewed] = useState<any[]>([]);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [toast, setToast] = useState("");
+  const [toastMessage, setToastMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [modalImage, setModalImage] = useState<string | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdminAccess = async () => {
+      try {
+        // Check if user has auth token
+        const authToken = sessionStorage.getItem("authToken");
+        if (!authToken) {
+          toast.error("Please login to access this page. Redirecting to home page!");
+          setTimeout(() => {
+            router.push("/");
+          }, 1000);
+          return;
+        }
+
+        // Get user profile to check admin status
+        const userData = await UserAPI.getProfile();
+        
+        console.log("🔍 User data retrieved:", { 
+          email: userData.email, 
+          admin: userData.admin, 
+          role: userData.role,
+          id: userData._id 
+        });
+        
+        // Check if user has admin privileges (either admin boolean is true OR role is "admin")
+        const isAdmin = userData.admin === true || userData.role === "admin";
+        
+        console.log("🔐 Admin check result:", {
+          adminField: userData.admin,
+          roleField: userData.role,
+          isAdminResult: isAdmin
+        });
+        
+        if (!isAdmin) {
+          console.log("❌ Access denied - User is not admin:", { admin: userData.admin, role: userData.role });
+          toast.error("You do not have permission to access this page. Admin access required.");
+          setTimeout(() => {
+            router.push("/equity");
+          }, 1500);
+          return;
+        }
+
+        console.log("✅ Admin access verified for user:", userData.email);
+        setIsCheckingAuth(false);
+        
+      } catch (error) {
+        console.error("❌ Failed to verify admin access:", error);
+        toast.error("Failed to verify your permissions. Please try again later.");
+        setTimeout(() => {
+          router.push("/equity");
+        }, 1500);
+      }
+    };
+
+    checkAdminAccess();
+  }, [router]);
 
   // Fetch KYC requests from backend
   const fetchKyc = async () => {
@@ -30,8 +92,11 @@ export default function AdminKycPage() {
   };
 
   useEffect(() => {
-    fetchKyc();
-  }, []);
+    // Only fetch KYC data after admin access is verified
+    if (!isCheckingAuth) {
+      fetchKyc();
+    }
+  }, [isCheckingAuth]);
 
   const handleAction = async (id: string, action: "accepted" | "rejected") => {
     setActionLoading(id + action);
@@ -43,21 +108,33 @@ export default function AdminKycPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        if (action === "accepted" && data.otp) {
-          setToast(`KYC for ${data.kyc.name} has been ${action}. OTP: ${data.otp} (Email may not have been sent due to configuration issues)`);
+        if (action === "accepted") {
+          setToastMessage(`KYC for ${data.kyc.name} has been ${action}. User can now post properties.`);
         } else {
-          setToast(`KYC for ${data.kyc.name} has been ${action}. Email sent.`);
+          setToastMessage(`KYC for ${data.kyc.name} has been ${action}.`);
         }
-        setTimeout(() => setToast(""), 5000); // Show longer for OTP
+        setTimeout(() => setToastMessage(""), 5000);
         // Re-fetch KYC requests to update UI
         fetchKyc();
       }
     } catch (err) {
-      setToast("Failed to update KYC status.");
-      setTimeout(() => setToast(""), 3000);
+      setToastMessage("Failed to update KYC status.");
+      setTimeout(() => setToastMessage(""), 3000);
     }
     setActionLoading(null);
   };
+
+  // Show loading screen while checking admin access
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-[#2d1a4a] to-[#a78bfa]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+          <p className="text-white">Verifying admin access...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-gradient-to-br from-black via-[#2d1a4a] to-[#a78bfa] px-4 relative">
@@ -71,9 +148,9 @@ export default function AdminKycPage() {
         <h2 className="text-3xl font-bold text-center mb-8 text-white">
           Admin KYC Review
         </h2>
-        {toast && (
+        {toastMessage && (
           <div className="mb-6 text-center text-green-400 font-semibold bg-black/60 rounded-lg py-2">
-            {toast}
+            {toastMessage}
           </div>
         )}
         <div className="mb-12">
@@ -168,4 +245,4 @@ export default function AdminKycPage() {
       )}
     </div>
   );
-} 
+}

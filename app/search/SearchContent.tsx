@@ -26,7 +26,7 @@ import Image from "next/image";
 import { FavoritesAPI } from "../lib/api-helpers";
 import { useFavorites } from "../contexts/FavoritesContext";
 import Map from "../components/Map";
-import Navbar from "../components/navbar";
+
 
 // Mock property data
 const priceRanges = [
@@ -1591,7 +1591,7 @@ const SearchPage = () => {
 
   return (
     <div className="h-screen bg-black text-white overflow-hidden flex flex-col">
-      <Navbar />
+      
 
       {/* Fixed Search Bar */}
       <div className="sticky top-0 z-50 bg-black shadow-orange-500 shadow-md flex-shrink-0">

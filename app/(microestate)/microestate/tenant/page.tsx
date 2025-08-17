@@ -141,6 +141,8 @@ export default function TenantDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [wasRemoved, setWasRemoved] = useState(false);
+  const [removalMessage, setRemovalMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTenantData = async () => {
@@ -162,7 +164,12 @@ export default function TenantDashboard() {
         ]);
 
         // Handle lease data
-        if (
+        if (leaseResponse.data && leaseResponse.data.hasTerminatedLeases === true && leaseResponse.data.activeLeases?.length === 0) {
+          // Tenant was removed from property
+          setWasRemoved(true);
+          setRemovalMessage(leaseResponse.data.message || "You have been removed from your property.");
+          setLease(null);
+        } else if (
           leaseResponse.data &&
           Array.isArray(leaseResponse.data) &&
           leaseResponse.data.length > 0
@@ -171,6 +178,7 @@ export default function TenantDashboard() {
             leaseResponse.data.find((l) => l.status === "active") ||
             leaseResponse.data[0];
           setLease(activeLease);
+          setWasRemoved(false);
           console.log("Lease data fetched:", activeLease);
         } else {
           setError("No active lease found for your account.");
@@ -226,11 +234,36 @@ export default function TenantDashboard() {
       <AnimatedGradient />
       <TenantNavbar />
 
-      {error && !lease && !tenantProfile && (
+      {error && !lease && !tenantProfile && !wasRemoved && (
         <div className="flex-1 flex flex-col items-center justify-center text-center text-white z-10">
           <AlertTriangle className="w-16 h-16 text-red-500 mt-16 mb-4" />
           <h2 className="text-2xl font-bold mb-2">Could Not Load Dashboard</h2>
           <p className="text-gray-400">{error}</p>
+        </div>
+      )}
+
+      {wasRemoved && tenantProfile && (
+        <div className="flex-1 flex flex-col items-center justify-center text-center text-white z-10 px-4">
+          <motion.div
+            className="bg-red-500/10 border-2 border-red-500/30 rounded-2xl p-8 max-w-md mx-auto mt-16"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-4 text-red-400">Property Access Removed</h2>
+            <p className="text-gray-300 mb-6">{removalMessage}</p>
+            <div className="bg-white/5 rounded-lg p-4 mb-6">
+              <h3 className="text-lg font-semibold text-white mb-2">What happened?</h3>
+              <p className="text-sm text-gray-400">
+                Your landlord has removed you from the property. This could be due to lease termination, 
+                property transfer, or other administrative reasons.
+              </p>
+            </div>
+            <div className="text-sm text-gray-400">
+              <p>If you believe this is an error or need more information, please contact your landlord directly.</p>
+            </div>
+          </motion.div>
         </div>
       )}
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from '@/components/ui/button';
-import { Building, LogOut, Home } from 'lucide-react';
+import { Home } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../Context/AuthProvider';
@@ -10,7 +10,7 @@ import Image from 'next/image';
 function Navbar() {
     const router = useRouter();
     const pathname = usePathname();
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
 
     // Don't show navbar on auth/register/verify-email pages
     if (
@@ -50,20 +50,10 @@ function Navbar() {
                     </Button>
 
                     {user ? (
-                        // Show logout button and user info when authenticated
-                        <>
-                            <div className="flex items-center gap-2 sm:gap-3 text-white">
-                                <span className="text-xs sm:text-sm text-gray-300 hidden sm:inline">Welcome, {user.name}</span>
-                                <Button
-                                    variant="outline"
-                                    className="h-8 sm:h-10 px-3 sm:px-4 text-xs sm:text-sm border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:border-orange-500/50 transition-all duration-200 flex items-center gap-1 sm:gap-2"
-                                    onClick={logout}
-                                >
-                                    <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
-                                    <span className="hidden xs:inline">Logout</span>
-                                </Button>
-                            </div>
-                        </>
+                        // Show user info when authenticated
+                        <div className="flex items-center gap-2 sm:gap-3 text-white">
+                            <span className="text-xs sm:text-sm text-gray-300 hidden sm:inline">Welcome, {user.name}</span>
+                        </div>
                     ) : (
                         // Show login/register buttons when not authenticated
                         <>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Home, FileText, CreditCard, User, Menu, QrCode, ArrowLeft } from "lucide-react";
 import { signOut } from "next-auth/react";
+import { toast } from "sonner";
 import Image from "next/image";
 
 const navLinks = [
@@ -34,15 +35,38 @@ export default function TenantNavbar() {
   }, [dropdownOpen]);
 
   const handleLogout = async () => {
-    await signOut({
-      redirect: false, 
-      callbackUrl: "/microestate",
-    })
+    try {
+      // Clear microestate-specific storage
+      localStorage.removeItem("microestate_user");
+      localStorage.removeItem("userRole");
+      
+      // Clear main platform authentication as well
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("authToken");
+        localStorage.removeItem("authToken");
+        document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      }
 
-    localStorage.removeItem("microestate_user");
-    localStorage.removeItem("userRole");
-    
-    router.push("/microestate");
+      // Sign out from NextAuth
+      await signOut({
+        redirect: false, 
+        callbackUrl: "/microestate",
+      });
+      
+      // Dispatch custom logout event for other components
+      window.dispatchEvent(new CustomEvent("userLogout"));
+      
+      // Show success toast
+      toast.success("You have been logged out successfully!");
+      
+      // Redirect to microestate home
+      router.push("/microestate");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Error during logout");
+      // Still redirect even if there's an error
+      router.push("/microestate");
+    }
   };
 
   return (
