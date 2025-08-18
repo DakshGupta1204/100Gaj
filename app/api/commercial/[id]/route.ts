@@ -3,6 +3,78 @@ import connectDB from "@/app/lib/mongodb";
 import CommercialProperties from "@/app/models/CommercialProperty";
 import { Types } from "mongoose";
 
+/**
+ * @swagger
+ * /api/commercial/{id}:
+ *   get:
+ *     summary: Get a property by ID
+ *     description: Fetch a commercial property by its MongoDB ObjectId.
+ *     tags:
+ *       - Commercial Properties
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           example: 66bdbf5a1e48a13d4c78c9f1
+ *         description: The unique property ID
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved property
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       example: 66bdbf5a1e48a13d4c78c9f1
+ *                     name:
+ *                       type: string
+ *                       example: "Prime Office Space"
+ *                     location:
+ *                       type: string
+ *                       example: "Hyderabad"
+ *                     price:
+ *                       type: number
+ *                       example: 25000000
+ *       400:
+ *         description: Invalid property ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Invalid property ID
+ *       404:
+ *         description: Property not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Property not found
+ *       500:
+ *         description: Internal server error
+ */
+
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);

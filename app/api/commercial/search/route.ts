@@ -3,6 +3,125 @@ import connectDB from "@/app/lib/mongodb";
 import { Types } from "mongoose";
 import CommercialProperty from "@/app/models/CommercialProperty";
 
+/**
+ * @swagger
+ * /api/commercial/search:
+ *   get:
+ *     summary: Search commercial properties
+ *     description: Fetch commercial properties with optional filters, sorting, and pagination.
+ *     tags:
+ *       - Commercial Properties
+ *     parameters:
+ *       - in: query
+ *         name: propertyType
+ *         schema:
+ *           type: string
+ *         description: Filter by property type (e.g., warehouse, office, retail)
+ *       - in: query
+ *         name: currentYield
+ *         schema:
+ *           type: number
+ *         description: Filter by current yield percentage
+ *       - in: query
+ *         name: riskLevel
+ *         schema:
+ *           type: string
+ *         description: Risk level of property (e.g., Low, Medium, High)
+ *       - in: query
+ *         name: title
+ *         schema:
+ *           type: string
+ *         description: Search by property title (partial match allowed)
+ *       - in: query
+ *         name: minPrice
+ *         schema:
+ *           type: number
+ *         description: Minimum price per share
+ *       - in: query
+ *         name: maxPrice
+ *         schema:
+ *           type: number
+ *         description: Maximum price per share
+ *       - in: query
+ *         name: city
+ *         schema:
+ *           type: string
+ *         description: Filter by city
+ *       - in: query
+ *         name: state
+ *         schema:
+ *           type: string
+ *         description: Filter by state
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [currentYield, pricePerShare, currentOccupancy]
+ *         description: Sort results by yield, price, or occupancy
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved properties
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       title:
+ *                         type: string
+ *                       propertyType:
+ *                         type: string
+ *                       location:
+ *                         type: object
+ *                         properties:
+ *                           city:
+ *                             type: string
+ *                           state:
+ *                             type: string
+ *                       totalShares:
+ *                         type: number
+ *                       availableShares:
+ *                         type: number
+ *                       pricePerShare:
+ *                         type: number
+ *                       currentYield:
+ *                         type: number
+ *                       predictedAppreciation:
+ *                         type: number
+ *                       riskLevel:
+ *                         type: string
+ *                       images:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                       description:
+ *                         type: string
+ *                       monthlyRental:
+ *                         type: number
+ *                       currentOccupancy:
+ *                         type: number
+ *                       totalValue:
+ *                         type: number
+ *                       features:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                       keyTenants:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *       500:
+ *         description: Failed to fetch properties
+ */
+
 export async function GET(req: NextRequest) {
   try {
     await connectDB();
