@@ -1,17 +1,7 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Microestate API",
-    "description": "A comprehensive property management system API that handles landlords, tenants, properties, leases, and billing.\n\n## Authentication\nThis API uses NextAuth.js for authentication with JWT tokens. Most endpoints require authentication.\n\n## Base URL\nAll API endpoints are prefixed with `/microestate/api`\n",
-    "version": "1.0.0",
-    "contact": {
-      "name": "Microestate Support",
-      "email": "support@microestate.com"
-    },
-    "license": {
-      "name": "MIT",
-      "url": "https://opensource.org/licenses/MIT"
-    }
+    "title": "Microestate API"
   },
   "servers": [
     {
@@ -65,7 +55,13 @@
             "application/x-www-form-urlencoded": {
               "schema": {
                 "type": "object",
-                "required": ["email", "password", "firstName", "lastName", "role"],
+                "required": [
+                  "email",
+                  "password",
+                  "firstName",
+                  "lastName",
+                  "role"
+                ],
                 "properties": {
                   "email": {
                     "type": "string",
@@ -317,7 +313,7 @@
         "tags": ["Authentication"],
         "summary": "Create microauth cookie",
         "description": "Creates a microauth cookie for authentication",
-        "security": [{"bearerAuth": []}],
+        "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
             "description": "Microauth cookie created successfully",
@@ -379,10 +375,8 @@
         "tags": ["Properties"],
         "summary": "Get all properties",
         "description": "Retrieve all properties for the authenticated landlord",
-        "security": [{"bearerAuth": []}],
-        "parameters": [
-         
-        ],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Properties retrieved successfully",
@@ -415,7 +409,7 @@
         "tags": ["Properties"],
         "summary": "Create a new property",
         "description": "Add a new property to the landlord's portfolio",
-        "security": [{"bearerAuth": []}],
+        "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -495,7 +489,7 @@
         "tags": ["Properties"],
         "summary": "Get property by ID",
         "description": "Retrieve a specific property by its ID",
-        "security": [{"bearerAuth": []}],
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -537,7 +531,7 @@
         "tags": ["Properties"],
         "summary": "Update property",
         "description": "Update an existing property",
-        "security": [{"bearerAuth": []}],
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -576,7 +570,7 @@
         "tags": ["Properties"],
         "summary": "Delete property",
         "description": "Delete a property from the system",
-        "security": [{"bearerAuth": []}],
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -604,7 +598,7 @@
         "tags": ["Properties"],
         "summary": "Get current tenant(s) for property",
         "description": "Retrieve current lease and tenant information for a property",
-        "security": [{"bearerAuth": []}],
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -646,7 +640,7 @@
         "tags": ["Properties"],
         "summary": "Add tenant to property",
         "description": "Create a new lease agreement and add tenant to property",
-        "security": [{"bearerAuth": []}],
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -665,7 +659,14 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["tenantEmail", "startDate", "endDate", "monthlyRent", "securityDeposit", "terms"],
+                "required": [
+                  "tenantEmail",
+                  "startDate",
+                  "endDate",
+                  "monthlyRent",
+                  "securityDeposit",
+                  "terms"
+                ],
                 "properties": {
                   "tenantEmail": {
                     "type": "string",
@@ -721,8 +722,8 @@
                 "tenantFirstName": "Jane",
                 "tenantLastName": "Smith",
                 "tenantPhone": "+1234567890",
-                "startDate": "2024-01-01",
-                "endDate": "2024-12-31",
+                "startDate": "2026-01-01",
+                "endDate": "2029-12-31",
                 "monthlyRent": 1200,
                 "securityDeposit": 2400,
                 "rentDueDate": 1,
@@ -744,7 +745,7 @@
         "tags": ["Properties"],
         "summary": "Remove tenant from property",
         "description": "Terminate lease and remove tenant from property",
-        "security": [{"bearerAuth": []}],
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -772,28 +773,8 @@
         "tags": ["Leases"],
         "summary": "Get all leases",
         "description": "Retrieve all leases for the authenticated user",
-        "security": [{"bearerAuth": []}],
-        "parameters": [
-          {
-            "name": "status",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": ["draft", "active", "expired", "terminated"]
-            },
-            "description": "Filter by lease status"
-          },
-          {
-            "name": "propertyId",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Filter by property ID"
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Leases retrieved successfully",
@@ -823,50 +804,9 @@
     "/bills": {
       "get": {
         "tags": ["Bills"],
-        "summary": "Get all bills",
-        "description": "Retrieve bills for the authenticated user",
-        "security": [{"bearerAuth": []}],
-        "parameters": [
-          {
-            "name": "status",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": ["pending", "paid", "overdue", "cancelled"]
-            },
-            "description": "Filter by bill status"
-          },
-          {
-            "name": "propertyId",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Filter by property ID"
-          },
-          {
-            "name": "month",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 12
-            },
-            "description": "Filter by month (1-12)"
-          },
-          {
-            "name": "year",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer"
-            },
-            "description": "Filter by year"
-          }
-        ],
+        "summary": "Get all bills for landlord",
+        "description": "Retrieve all bills for the authenticated landlord with populated property and tenant details",
+        "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
             "description": "Bills retrieved successfully",
@@ -875,11 +815,11 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                    "message": {
+                      "type": "string",
+                      "example": "Bills Found"
                     },
-                    "data": {
+                    "bills": {
                       "type": "array",
                       "items": {
                         "$ref": "#/components/schemas/Bill"
@@ -889,35 +829,125 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
           }
         }
       },
       "post": {
         "tags": ["Bills"],
-        "summary": "Create a new bill",
-        "description": "Create a new bill for a tenant",
-        "security": [{"bearerAuth": []}],
+        "summary": "Create a new utility bill",
+        "description": "Create a new utility bill for a tenant (Landlord only)",
+        "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/BillInput"
+                "type": "object",
+                "required": [
+                  "utilityType",
+                  "amount",
+                  "billingPeriod",
+                  "dueDate",
+                  "responsibleParty"
+                ],
+                "properties": {
+                  "utilityType": {
+                    "type": "string",
+                    "example": "electricity"
+                  },
+                  "amount": {
+                    "type": "number",
+                    "minimum": 0,
+                    "example": 150
+                  },
+                  "billingPeriod": {
+                    "type": "object",
+                    "required": ["start", "end"],
+                    "properties": {
+                      "start": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2024-01-01"
+                      },
+                      "end": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2024-01-31"
+                      }
+                    }
+                  },
+                  "dueDate": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2024-02-15"
+                  },
+                  "responsibleParty": {
+                    "type": "string",
+                    "enum": ["tenant", "landlord"],
+                    "example": "tenant"
+                  },
+                  "tenantId": {
+                    "type": "string",
+                    "description": "Optional: Specific tenant selection",
+                    "example": "507f1f77bcf86cd799439012"
+                  },
+                  "propertyId": {
+                    "type": "string",
+                    "description": "Optional: Specific property selection",
+                    "example": "507f1f77bcf86cd799439011"
+                  },
+                  "billDocument": {
+                    "type": "string",
+                    "description": "Optional: URL to bill document",
+                    "example": "https://example.com/bill.pdf"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Optional: Additional notes",
+                    "example": "High usage this month"
+                  }
+                }
               },
               "example": {
-                "propertyId": "507f1f77bcf86cd799439011",
+                "utilityType": "electricity",
+                "amount": 150,
+                "billingPeriod": {
+                  "start": "2024-01-01",
+                  "end": "2024-01-31"
+                },
+                "dueDate": "2024-02-15",
+                "responsibleParty": "tenant",
                 "tenantId": "507f1f77bcf86cd799439012",
-                "amount": 1200,
-                "type": "rent",
-                "description": "Monthly rent for January 2024",
-                "dueDate": "2024-01-01"
+                "notes": "High usage this month"
               }
             }
           }
         },
         "responses": {
-          "201": {
-            "description": "Bill created successfully"
+          "200": {
+            "description": "Bill created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Bill Created Successfully"
+                    },
+                    "bill": {
+                      "$ref": "#/components/schemas/Bill"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           }
         }
       }
@@ -926,8 +956,8 @@
       "get": {
         "tags": ["Bills"],
         "summary": "Get bill by ID",
-        "description": "Retrieve a specific bill by its ID",
-        "security": [{"bearerAuth": []}],
+        "description": "Retrieve a specific bill by its ID (accessible by both landlord and tenant)",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -948,25 +978,28 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                    "message": {
+                      "type": "string",
+                      "example": "Bill Found Successfully"
                     },
-                    "data": {
+                    "bill": {
                       "$ref": "#/components/schemas/Bill"
                     }
                   }
                 }
               }
             }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       },
       "put": {
         "tags": ["Bills"],
-        "summary": "Update bill",
-        "description": "Update an existing bill",
-        "security": [{"bearerAuth": []}],
+        "summary": "Update bill (Landlord only)",
+        "description": "Update an existing bill details",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -984,22 +1017,71 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/BillInput"
+                "type": "object",
+                "properties": {
+                  "utilityType": {
+                    "type": "string",
+                    "example": "electricity"
+                  },
+                  "amount": {
+                    "type": "number",
+                    "example": 175
+                  },
+                  "billingPeriod": {
+                    "type": "object",
+                    "properties": {
+                      "start": {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      "end": {
+                        "type": "string",
+                        "format": "date"
+                      }
+                    }
+                  },
+                  "dueDate": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "notes": {
+                    "type": "string"
+                  }
+                }
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Bill updated successfully"
+            "description": "Bill updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Bill updated successfully"
+                    },
+                    "updatedBill": {
+                      "$ref": "#/components/schemas/Bill"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           }
         }
       },
       "delete": {
         "tags": ["Bills"],
-        "summary": "Delete bill",
+        "summary": "Delete bill (Landlord only)",
         "description": "Delete a bill from the system",
-        "security": [{"bearerAuth": []}],
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -1014,7 +1096,23 @@
         ],
         "responses": {
           "200": {
-            "description": "Bill deleted successfully"
+            "description": "Bill deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Bill deleted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           }
         }
       }
@@ -1022,9 +1120,9 @@
     "/bills/{id}/mark-as-paid": {
       "post": {
         "tags": ["Bills"],
-        "summary": "Mark bill as paid",
-        "description": "Mark a bill as paid by the landlord",
-        "security": [{"bearerAuth": []}],
+        "summary": "Mark bill as paid (Landlord only)",
+        "description": "Mark a bill as paid by the landlord - no request body needed",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -1037,38 +1135,44 @@
             "example": "507f1f77bcf86cd799439011"
           }
         ],
-        "requestBody": {
-          "required": false,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "paymentMethod": {
-                    "type": "string",
-                    "example": "bank_transfer"
-                  },
-                  "transactionId": {
-                    "type": "string",
-                    "example": "TXN123456789"
-                  },
-                  "paidAmount": {
-                    "type": "number",
-                    "example": 1200
-                  }
-                }
-              },
-              "example": {
-                "paymentMethod": "bank_transfer",
-                "transactionId": "TXN123456789",
-                "paidAmount": 1200
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
-            "description": "Bill marked as paid successfully"
+            "description": "Bill marked as paid successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Bill marked as paid successfully"
+                    },
+                    "bill": {
+                      "$ref": "#/components/schemas/Bill"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bill already paid or other error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Bill already paid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           }
         }
       }
@@ -1076,9 +1180,9 @@
     "/bills/{id}/submit-payment": {
       "post": {
         "tags": ["Bills"],
-        "summary": "Submit payment for bill",
-        "description": "Submit payment proof for a bill (by tenant)",
-        "security": [{"bearerAuth": []}],
+        "summary": "Submit payment proof (Tenant only)",
+        "description": "Submit payment proof screenshot/file for a bill by tenant",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -1097,27 +1201,12 @@
             "multipart/form-data": {
               "schema": {
                 "type": "object",
-                "required": ["paymentProof"],
+                "required": ["File"],
                 "properties": {
-                  "paymentProof": {
+                  "File": {
                     "type": "string",
                     "format": "binary",
-                    "description": "Payment proof file (image/document)"
-                  },
-                  "paymentMethod": {
-                    "type": "string",
-                    "description": "Payment method used",
-                    "example": "bank_transfer"
-                  },
-                  "transactionId": {
-                    "type": "string",
-                    "description": "Transaction ID",
-                    "example": "TXN123456789"
-                  },
-                  "amount": {
-                    "type": "number",
-                    "description": "Amount paid",
-                    "example": 1200
+                    "description": "Payment proof screenshot/image file"
                   }
                 }
               }
@@ -1126,7 +1215,46 @@
         },
         "responses": {
           "200": {
-            "description": "Payment submitted successfully"
+            "description": "Payment proof uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "file uploaded Sucessfully Wait Until Landlord approves it"
+                    },
+                    "userId": {
+                      "type": "string"
+                    },
+                    "ImageUrl": {
+                      "type": "string"
+                    },
+                    "billstatus": {
+                      "type": "string",
+                      "example": "pending"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "File required or unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Error file Scrrenshot is requried@"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -1134,9 +1262,9 @@
     "/bills/{id}/payment-proof": {
       "get": {
         "tags": ["Bills"],
-        "summary": "Get payment proof for bill",
-        "description": "Retrieve payment proof file for a bill",
-        "security": [{"bearerAuth": []}],
+        "summary": "Get payment proof (Landlord only)",
+        "description": "Retrieve payment proof URL and details for a bill",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -1153,10 +1281,39 @@
           "200": {
             "description": "Payment proof retrieved successfully",
             "content": {
-              "application/octet-stream": {
+              "application/json": {
                 "schema": {
-                  "type": "string",
-                  "format": "binary"
+                  "type": "object",
+                  "properties": {
+                    "paymentProofUrl": {
+                      "type": "string",
+                      "example": "https://example.com/payment-proof.jpg"
+                    },
+                    "uploadedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "pending"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No payment proof uploaded yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "No payment proof uploaded yet"
+                    }
+                  }
                 }
               }
             }
@@ -1165,11 +1322,48 @@
       }
     },
     "/bills/{id}/status": {
-      "put": {
+      "get": {
+        "tags": ["Bills"],
+        "summary": "Get bill status",
+        "description": "Get the current status of a specific bill",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bill ID",
+            "example": "507f1f77bcf86cd799439011"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bill status retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": ["pending", "paid", "overdue", "cancelled"],
+                      "example": "pending"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
         "tags": ["Bills"],
         "summary": "Update bill status",
-        "description": "Update the status of a bill",
-        "security": [{"bearerAuth": []}],
+        "description": "Update the status of a bill (uses PATCH method)",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -1205,7 +1399,23 @@
         },
         "responses": {
           "200": {
-            "description": "Bill status updated successfully"
+            "description": "Bill status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Bill status Updated Sucessfully"
+                    },
+                    "updatedBill": {
+                      "$ref": "#/components/schemas/Bill"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -1213,9 +1423,9 @@
     "/bills/overdue": {
       "get": {
         "tags": ["Bills"],
-        "summary": "Get overdue bills",
-        "description": "Retrieve all overdue bills for the authenticated user",
-        "security": [{"bearerAuth": []}],
+        "summary": "Get overdue bills (Landlord only)",
+        "description": "Retrieve all overdue bills for the authenticated landlord",
+        "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
             "description": "Overdue bills retrieved successfully",
@@ -1224,11 +1434,15 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                    "message": {
+                      "type": "string",
+                      "example": "Overdue bills fetched successfully"
                     },
-                    "data": {
+                    "count": {
+                      "type": "number",
+                      "example": 5
+                    },
+                    "bills": {
                       "type": "array",
                       "items": {
                         "$ref": "#/components/schemas/Bill"
@@ -1247,7 +1461,7 @@
         "tags": ["Tenants"],
         "summary": "Get tenant's property information",
         "description": "Retrieve property information for the authenticated tenant",
-        "security": [{"bearerAuth": []}],
+        "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
             "description": "Tenant property information retrieved",
@@ -1284,7 +1498,7 @@
         "tags": ["Tenants"],
         "summary": "Get all tenants for landlord",
         "description": "Retrieve all tenants associated with the authenticated landlord",
-        "security": [{"bearerAuth": []}],
+        "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
             "description": "Tenants retrieved successfully",
@@ -1316,7 +1530,7 @@
         "tags": ["Users"],
         "summary": "Get user by ID",
         "description": "Retrieve user information by ID",
-        "security": [{"bearerAuth": []}],
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -1346,7 +1560,7 @@
         "tags": ["Users"],
         "summary": "Update user profile",
         "description": "Update user profile information",
-        "security": [{"bearerAuth": []}],
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -1405,7 +1619,7 @@
         "tags": ["Utilities"],
         "summary": "Test authentication",
         "description": "Test endpoint to verify authentication is working",
-        "security": [{"bearerAuth": []}],
+        "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
             "description": "Authentication test successful",
@@ -1460,7 +1674,7 @@
         "tags": ["Utilities"],
         "summary": "Upload file",
         "description": "Upload files to the server",
-        "security": [{"bearerAuth": []}],
+        "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -1476,7 +1690,12 @@
                   },
                   "type": {
                     "type": "string",
-                    "enum": ["property_image", "profile_image", "payment_proof", "document"],
+                    "enum": [
+                      "property_image",
+                      "profile_image",
+                      "payment_proof",
+                      "document"
+                    ],
                     "description": "Type of file being uploaded",
                     "example": "property_image"
                   }
@@ -1518,7 +1737,7 @@
         "tags": ["Utilities"],
         "summary": "Update user role",
         "description": "Update the role of the authenticated user",
-        "security": [{"bearerAuth": []}],
+        "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -1647,7 +1866,14 @@
           },
           "propertyType": {
             "type": "string",
-            "enum": ["apartment", "house", "condo", "townhouse", "room", "other"],
+            "enum": [
+              "apartment",
+              "house",
+              "condo",
+              "townhouse",
+              "room",
+              "other"
+            ],
             "example": "apartment"
           },
           "bedrooms": {
@@ -1756,7 +1982,16 @@
       },
       "PropertyInput": {
         "type": "object",
-        "required": ["title", "description", "address", "propertyType", "bedrooms", "bathrooms", "rent", "securityDeposit"],
+        "required": [
+          "title",
+          "description",
+          "address",
+          "propertyType",
+          "bedrooms",
+          "bathrooms",
+          "rent",
+          "securityDeposit"
+        ],
         "properties": {
           "title": {
             "type": "string",
@@ -1796,7 +2031,14 @@
           },
           "propertyType": {
             "type": "string",
-            "enum": ["apartment", "house", "condo", "townhouse", "room", "other"],
+            "enum": [
+              "apartment",
+              "house",
+              "condo",
+              "townhouse",
+              "room",
+              "other"
+            ],
             "example": "apartment"
           },
           "bedrooms": {

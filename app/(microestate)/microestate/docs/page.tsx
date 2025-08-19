@@ -3,8 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useState, useEffect } from 'react';
 import SwaggerUI from 'swagger-ui-react';
-// // Dynamically import SwaggerUI to avoid SSR issues
-// const SwaggerUI = dynamic(() => import('swagger-ui-react'), { ssr: false });
+
 
 
 // Fix the CSS import - use the correct path
@@ -80,7 +79,7 @@ export default function ApiDocsPage() {
             defaultModelsExpandDepth={1}
             deepLinking={true}
             displayRequestDuration={true}
-            filter={true}
+            // filter={true}
             showExtensions={true}
             showCommonExtensions={true}
             tryItOutEnabled={true}
@@ -97,12 +96,6 @@ export default function ApiDocsPage() {
             onComplete={(system) => {
               console.log('Swagger UI loaded:', system);
             }}
-            presets={[
-              // You can add custom presets here if needed
-            ]}
-            plugins={[
-              // You can add custom plugins here if needed
-            ]}
             layout="BaseLayout"
             validatorUrl="https://validator.swagger.io/validator"
           />

@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const apiSpec = JSON.parse(specContent);
 
     // Update server URLs based on the request
-    const host = request.headers.get('host') || 'localhost:3001';
+    const host = request.headers.get('host') || 'localhost:3000';
     const protocol = request.headers.get('x-forwarded-proto') || 'http';
     
     apiSpec.servers = [
