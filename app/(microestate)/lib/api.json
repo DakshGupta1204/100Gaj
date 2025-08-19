@@ -7,10 +7,6 @@
     {
       "url": "http://localhost:3000/microestate/api",
       "description": "Development server"
-    },
-    {
-      "url": "https://your-domain.com/microestate/api",
-      "description": "Production server"
     }
   ],
   "tags": [
@@ -48,21 +44,30 @@
       "post": {
         "tags": ["Authentication"],
         "summary": "Register a new user",
-        "description": "Create a new user account with email verification",
+        "description": "Create a new user account with email verification. Landlords can optionally upload QR code.",
         "requestBody": {
           "required": true,
           "content": {
-            "application/x-www-form-urlencoded": {
+            "multipart/form-data": {
               "schema": {
                 "type": "object",
                 "required": [
-                  "email",
-                  "password",
                   "firstName",
                   "lastName",
+                  "email",
+                  "password",
+                  "phone",
                   "role"
                 ],
                 "properties": {
+                  "firstName": {
+                    "type": "string",
+                    "example": "John"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "example": "Doe"
+                  },
                   "email": {
                     "type": "string",
                     "format": "email",
@@ -73,52 +78,90 @@
                     "minLength": 6,
                     "example": "password123"
                   },
-                  "firstName": {
+                  "phone": {
                     "type": "string",
-                    "example": "John"
-                  },
-                  "lastName": {
-                    "type": "string",
-                    "example": "Doe"
+                    "example": "+1234567890"
                   },
                   "role": {
                     "type": "string",
                     "enum": ["landlord", "tenant"],
                     "example": "landlord"
                   },
-                  "phone": {
+                  "qrCode": {
                     "type": "string",
-                    "example": "+1234567890"
+                    "format": "binary",
+                    "description": "QR code file for landlords (optional)"
                   }
                 }
-              },
-              "example": {
-                "email": "user@example.com",
-                "password": "password123",
-                "firstName": "John",
-                "lastName": "Doe",
-                "role": "landlord",
-                "phone": "+1234567890"
               }
             }
           }
         },
         "responses": {
-          "201": {
+          "200": {
             "description": "User created successfully",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Account created successfully"
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "507f1f77bcf86cd799439011"
+                        },
+                        "firstName": {
+                          "type": "string",
+                          "example": "John"
+                        },
+                        "lastName": {
+                          "type": "string",
+                          "example": "Doe"
+                        },
+                        "email": {
+                          "type": "string",
+                          "example": "user@example.com"
+                        },
+                        "role": {
+                          "type": "string",
+                          "example": "landlord"
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
           },
           "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "User with this email already exists"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -154,11 +197,58 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "Email verified successfully"
+          "201": {
+            "description": "Email verified successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Account verified sucessfully"
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "email": {
+                          "type": "string",
+                          "example": "user@example.com"
+                        },
+                        "role": {
+                          "type": "string",
+                          "example": "landlord"
+                        },
+                        "profileImage": {
+                          "type": "string",
+                          "example": "https://example.com/profile.jpg"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
+          "401": {
+            "description": "Invalid verification code or user already verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Invaild Code"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -166,34 +256,74 @@
     "/auth/verify-resend-code": {
       "post": {
         "tags": ["Authentication"],
-        "summary": "Resend verification code",
+        "summary": "Verify password reset code",
+        "description": "Verify the password reset code sent via email",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["email"],
+                "required": ["email", "code"],
                 "properties": {
                   "email": {
                     "type": "string",
                     "format": "email",
                     "example": "user@example.com"
+                  },
+                  "code": {
+                    "type": "string",
+                    "example": "123456"
                   }
                 }
               },
               "example": {
-                "email": "user@example.com"
+                "email": "user@example.com",
+                "code": "123456"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Verification code sent successfully"
+            "description": "Code verified successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Code verified"
+                    },
+                    "userId": {
+                      "type": "string",
+                      "example": "507f1f77bcf86cd799439011"
+                    }
+                  }
+                }
+              }
+            }
           },
           "400": {
-            "$ref": "#/components/responses/BadRequest"
+            "description": "Invalid or expired code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Invalid or expired code"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -225,10 +355,44 @@
         },
         "responses": {
           "200": {
-            "description": "Password reset email sent"
+            "description": "Password reset code sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Verification code send sucessfully Check your email"
+                    },
+                    "userId": {
+                      "type": "string",
+                      "example": "507f1f77bcf86cd799439011"
+                    }
+                  }
+                }
+              }
+            }
           },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
+          "400": {
+            "description": "Email not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Email does not exist in our database"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -236,18 +400,20 @@
     "/auth/reset-password": {
       "post": {
         "tags": ["Authentication"],
-        "summary": "Reset password with token",
+        "summary": "Reset password",
+        "description": "Reset password using email (after code verification)",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["token", "password"],
+                "required": ["email", "password"],
                 "properties": {
-                  "token": {
+                  "email": {
                     "type": "string",
-                    "example": "reset-token-123"
+                    "format": "email",
+                    "example": "user@example.com"
                   },
                   "password": {
                     "type": "string",
@@ -257,7 +423,7 @@
                 }
               },
               "example": {
-                "token": "reset-token-123",
+                "email": "user@example.com",
                 "password": "newpassword123"
               }
             }
@@ -265,10 +431,36 @@
         },
         "responses": {
           "200": {
-            "description": "Password reset successful"
+            "description": "Password reset successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Password updated successfully"
+                    }
+                  }
+                }
+              }
+            }
           },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "User not found"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -276,7 +468,8 @@
     "/auth/resend-code": {
       "post": {
         "tags": ["Authentication"],
-        "summary": "Resend verification code (alternative endpoint)",
+        "summary": "Resend verification code",
+        "description": "Resend email verification code for unverified users",
         "requestBody": {
           "required": true,
           "content": {
@@ -300,10 +493,40 @@
         },
         "responses": {
           "200": {
-            "description": "Verification code sent successfully"
+            "description": "Verification code sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Verification code sent successfully"
+                    }
+                  }
+                }
+              }
+            }
           },
           "400": {
-            "$ref": "#/components/responses/BadRequest"
+            "description": "Email already verified or other error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Email is already verified"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -312,8 +535,45 @@
       "post": {
         "tags": ["Authentication"],
         "summary": "Create microauth cookie",
-        "description": "Creates a microauth cookie for authentication",
+        "description": "Creates a microauth cookie for authentication (requires NextAuth session)",
         "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["userId", "email", "role", "name"],
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "example": "507f1f77bcf86cd799439011"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "user@example.com"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["landlord", "tenant"],
+                    "example": "landlord"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                  }
+                }
+              },
+              "example": {
+                "userId": "507f1f77bcf86cd799439011",
+                "email": "user@example.com",
+                "role": "landlord",
+                "name": "John Doe"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Microauth cookie created successfully",
@@ -328,7 +588,7 @@
                     },
                     "message": {
                       "type": "string",
-                      "example": "Microauth cookie created"
+                      "example": "Microauth cookie created successfully"
                     }
                   }
                 }
@@ -345,7 +605,7 @@
       "post": {
         "tags": ["Authentication"],
         "summary": "Clear microauth cookie",
-        "description": "Clears the microauth cookie",
+        "description": "Clears the microauth cookie (logout)",
         "responses": {
           "200": {
             "description": "Microauth cookie cleared successfully",
@@ -360,7 +620,7 @@
                     },
                     "message": {
                       "type": "string",
-                      "example": "Microauth cookie cleared"
+                      "example": "Microauth cookie cleared successfully"
                     }
                   }
                 }
@@ -792,6 +1052,176 @@
                       "items": {
                         "$ref": "#/components/schemas/Lease"
                       }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications": {
+      "post": {
+        "tags": ["Utilities"],
+        "summary": "Send notification to tenant",
+        "description": "Send email notification to tenant about property assignment updates or other important notices",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "tenantId",
+                  "propertyTitle",
+                  "landlordName",
+                  "message"
+                ],
+                "properties": {
+                  "tenantId": {
+                    "type": "string",
+                    "description": "ID of the tenant to notify",
+                    "example": "507f1f77bcf86cd799439012"
+                  },
+                  "propertyTitle": {
+                    "type": "string",
+                    "description": "Title of the property",
+                    "example": "Beautiful 2BR Apartment"
+                  },
+                  "landlordName": {
+                    "type": "string",
+                    "description": "Name of the landlord",
+                    "example": "John Smith"
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "Custom message to include in the notification",
+                    "example": "Your lease agreement has been terminated and you are no longer assigned to this property."
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "Type of notification (optional)",
+                    "default": "tenant_removal",
+                    "enum": [
+                      "tenant_removal",
+                      "property_update",
+                      "lease_update",
+                      "general"
+                    ],
+                    "example": "tenant_removal"
+                  }
+                }
+              },
+              "example": {
+                "tenantId": "507f1f77bcf86cd799439012",
+                "propertyTitle": "Beautiful 2BR Apartment",
+                "landlordName": "John Smith",
+                "message": "Your lease agreement has been terminated and you are no longer assigned to this property.",
+                "type": "tenant_removal"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Notification sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Notification sent successfully to tenant"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "tenantEmail": {
+                          "type": "string",
+                          "format": "email",
+                          "example": "tenant@example.com"
+                        },
+                        "tenantName": {
+                          "type": "string",
+                          "example": "Jane Doe"
+                        },
+                        "notificationType": {
+                          "type": "string",
+                          "example": "tenant_removal"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Missing required fields"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tenant not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Tenant not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to send notification",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Failed to send notification"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "Error details (only in development)",
+                      "example": "SMTP connection failed"
                     }
                   }
                 }
