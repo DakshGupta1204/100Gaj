@@ -8,6 +8,15 @@ import { connectToDB } from '@/app/lib/mongoose';
 // GET /api/properties - Get all properties (with pagination and filtering)
 export async function GET(request: NextRequest) {
   try {
+    // Check if environment variables are loaded
+    if (!process.env.MONGODB_URI) {
+      console.error('MONGODB_URI environment variable is not set');
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Server configuration error' 
+      }, { status: 500 });
+    }
+
     await connectToDB();
     
     // Extract query parameters for filtering
@@ -39,11 +48,12 @@ export async function GET(request: NextRequest) {
       count: properties.length,
       properties
     }, { status: 200 });
-  } catch (_error) {
-
+  } catch (error) {
+    console.error('Properties API Error:', error);
     return NextResponse.json({ 
       success: false, 
-      error: 'Failed to fetch properties' 
+      error: 'Failed to fetch properties',
+      details: process.env.NODE_ENV === 'development' ? error : error
     }, { status: 500 });
   }
 }
