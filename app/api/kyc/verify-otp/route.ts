@@ -19,6 +19,94 @@ const KycRequestSchema = new mongoose.Schema({
 });
 const KycRequest = mongoose.models.KycRequest || mongoose.model("KycRequest", KycRequestSchema);
 
+/**
+ * @swagger
+ * /api/kyc/verify-otp:
+ *   post:
+ *     summary: Verify OTP for property posting
+ *     description: Verify the OTP sent to user's email to enable property posting after KYC approval
+ *     tags:
+ *       - KYC
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - otp
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 description: User ID (alternative to kycId)
+ *                 example: "64b29a1234abcd5678ef90ac"
+ *               kycId:
+ *                 type: string
+ *                 description: KYC request ID (alternative to userId)
+ *                 example: "64b29a1234abcd5678ef90ab"
+ *               otp:
+ *                 type: string
+ *                 description: 6-digit OTP received via email
+ *                 pattern: "^[0-9]{6}$"
+ *                 example: "123456"
+ *     responses:
+ *       200:
+ *         description: OTP verified successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "OTP verified. You can now post your property."
+ *       400:
+ *         description: Missing required fields or invalid IDs
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing required fields"
+ *       401:
+ *         description: Invalid OTP or OTP expired
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid OTP"
+ *       404:
+ *         description: KYC record not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "KYC record not found"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to verify OTP"
+ */
+
 export async function POST(req: NextRequest) {
   try {
     await connectDB();

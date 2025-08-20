@@ -37,6 +37,240 @@ function getUserIdFromAuthHeader(authHeader: string | null) {
   }
 }
 
+/**
+ * @swagger
+ * /api/kyc:
+ *   post:
+ *     summary: Submit KYC application
+ *     description: Submit a new KYC (Know Your Customer) application with personal details and PAN card image
+ *     tags:
+ *       - KYC
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - pan
+ *               - panImage
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Full name of the applicant
+ *                 example: "Rahul Adepu"
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Email address of the applicant
+ *                 example: "rahul@example.com"
+ *               pan:
+ *                 type: string
+ *                 description: PAN (Permanent Account Number) of the applicant
+ *                 pattern: "^[A-Z]{5}[0-9]{4}[A-Z]$"
+ *                 example: "ABCDE1234F"
+ *               panImage:
+ *                 type: string
+ *                 format: binary
+ *                 description: PAN card image file (JPEG, PNG, etc.)
+ *     responses:
+ *       200:
+ *         description: KYC application submitted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 kyc:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: "64b29a1234abcd5678ef90ab"
+ *                     userId:
+ *                       type: string
+ *                       example: "64b29a1234abcd5678ef90ac"
+ *                     name:
+ *                       type: string
+ *                       example: "Rahul Adepu"
+ *                     pan:
+ *                       type: string
+ *                       example: "ABCDE1234F"
+ *                     status:
+ *                       type: string
+ *                       enum: [pending, accepted, rejected]
+ *                       example: "pending"
+ *                     email:
+ *                       type: string
+ *                       example: "rahul@example.com"
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-01-15T10:30:00.000Z"
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "All fields are required"
+ *       401:
+ *         description: Unauthorized - missing or invalid token
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to submit KYC"
+ *   put:
+ *     summary: Send OTP for property posting
+ *     description: Generate and send OTP to user's email for property posting verification after KYC approval
+ *     tags:
+ *       - KYC
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: OTP sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "OTP sent to your email."
+ *       400:
+ *         description: KYC not accepted or user not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "KYC not accepted or not found"
+ *       401:
+ *         description: Unauthorized - missing or invalid token
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to send OTP"
+ *   get:
+ *     summary: Get KYC requests (Admin only)
+ *     description: Retrieve all KYC requests, separated into pending and reviewed categories
+ *     tags:
+ *       - KYC
+ *     responses:
+ *       200:
+ *         description: KYC requests retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 pending:
+ *                   type: array
+ *                   description: List of pending KYC requests
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: "64b29a1234abcd5678ef90ab"
+ *                       userId:
+ *                         type: string
+ *                         example: "64b29a1234abcd5678ef90ac"
+ *                       name:
+ *                         type: string
+ *                         example: "Rahul Adepu"
+ *                       pan:
+ *                         type: string
+ *                         example: "ABCDE1234F"
+ *                       email:
+ *                         type: string
+ *                         example: "rahul@example.com"
+ *                       status:
+ *                         type: string
+ *                         enum: [pending, accepted, rejected]
+ *                         example: "pending"
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2024-01-15T10:30:00.000Z"
+ *                 reviewed:
+ *                   type: array
+ *                   description: List of reviewed KYC requests
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: "64b29a1234abcd5678ef90ab"
+ *                       userId:
+ *                         type: string
+ *                         example: "64b29a1234abcd5678ef90ac"
+ *                       name:
+ *                         type: string
+ *                         example: "Rahul Adepu"
+ *                       pan:
+ *                         type: string
+ *                         example: "ABCDE1234F"
+ *                       email:
+ *                         type: string
+ *                         example: "rahul@example.com"
+ *                       status:
+ *                         type: string
+ *                         enum: [pending, accepted, rejected]
+ *                         example: "accepted"
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2024-01-15T10:30:00.000Z"
+ *                       reviewedAt:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2024-01-16T14:20:00.000Z"
+ *                       adminId:
+ *                         type: string
+ *                         example: "64b29a1234abcd5678ef90ad"
+ *                       reason:
+ *                         type: string
+ *                         example: "Documents verified successfully"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to fetch KYC requests"
+ */
+
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
