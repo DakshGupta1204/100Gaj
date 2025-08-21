@@ -1,3 +1,3 @@
-import swaggerSpec from '../../swagger.json';
+import swaggerSpec from '../../public/swagger.json';
 
 export { swaggerSpec };

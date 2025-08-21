@@ -81,9 +81,259 @@
   ],
   "paths": {
     "/api/commercial": {
+      "get": {
+        "summary": "Get all commercial properties",
+        "description": "Fetches all commercial properties from the database with computed fields like riskLevel, predictedAppreciation, etc.\n\n**📋 Testing Steps:**\n1. Click \"Execute\" to fetch all properties\n2. No authentication required for viewing properties\n\n**💡 Note:** Returns all properties with their investment details and computed metrics.",
+        "tags": ["Commercial Properties"],
+        "responses": {
+          "200": {
+            "description": "List of commercial properties retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "example": "64b29a1234abcd5678ef90ab"
+                          },
+                          "title": {
+                            "type": "string",
+                            "example": "Cyber Hub Gurgaon"
+                          },
+                          "projectName": {
+                            "type": "string",
+                            "example": "Cyber Hub Gurgaon"
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "Computed field - same as projectName or title",
+                            "example": "Cyber Hub Gurgaon"
+                          },
+                          "propertyType": {
+                            "type": "string",
+                            "example": "Office"
+                          },
+                          "type": {
+                            "type": "string",
+                            "description": "Computed field - same as propertyType",
+                            "example": "Office"
+                          },
+                          "location": {
+                            "type": "string",
+                            "example": "Cyber City, Gurgaon"
+                          },
+                          "locality": {
+                            "type": "string",
+                            "example": "Cyber City"
+                          },
+                          "address": {
+                            "type": "object",
+                            "properties": {
+                              "street": {
+                                "type": "string",
+                                "example": "Cyber Hub Road"
+                              },
+                              "city": {
+                                "type": "string",
+                                "example": "Gurgaon"
+                              },
+                              "state": {
+                                "type": "string",
+                                "example": "Haryana"
+                              },
+                              "zipCode": {
+                                "type": "string",
+                                "example": "122002"
+                              }
+                            }
+                          },
+                          "totalShares": {
+                            "type": "number",
+                            "example": 1000
+                          },
+                          "availableShares": {
+                            "type": "number",
+                            "example": 250
+                          },
+                          "pricePerShare": {
+                            "type": "number",
+                            "example": 50000
+                          },
+                          "currentYield": {
+                            "type": "number",
+                            "example": 6.5
+                          },
+                          "appreciationRate": {
+                            "type": "number",
+                            "example": 8.5
+                          },
+                          "predictedAppreciation": {
+                            "type": "number",
+                            "description": "Computed field - same as appreciationRate",
+                            "example": 8.5
+                          },
+                          "currentROI": {
+                            "type": "number",
+                            "example": 8.5
+                          },
+                          "riskLevel": {
+                            "type": "string",
+                            "enum": ["Low", "Medium", "High"],
+                            "description": "Computed risk level based on ROI",
+                            "example": "Medium"
+                          },
+                          "status": {
+                            "type": "string",
+                            "example": "pending_approval"
+                          },
+                          "images": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "example": ["https://ik.imagekit.io/url1.jpg"]
+                          },
+                          "description": {
+                            "type": "string",
+                            "example": "Modern office space with excellent amenities"
+                          },
+                          "monthlyRental": {
+                            "type": "number",
+                            "example": 250000
+                          },
+                          "totalArea": {
+                            "type": "number",
+                            "example": 2500
+                          },
+                          "currentOccupancy": {
+                            "type": "number",
+                            "example": 85
+                          },
+                          "occupancyRate": {
+                            "type": "number",
+                            "description": "Computed field - same as currentOccupancy",
+                            "example": 85
+                          },
+                          "totalPropertyValue": {
+                            "type": "number",
+                            "example": 50000000
+                          },
+                          "totalValue": {
+                            "type": "number",
+                            "description": "Computed field - same as totalPropertyValue",
+                            "example": 50000000
+                          },
+                          "totalValuation": {
+                            "type": "number",
+                            "example": 5.0
+                          },
+                          "features": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "example": ["Prime Location", "High ROI"]
+                          },
+                          "highlights": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "example": ["Prime Location", "High ROI"]
+                          },
+                          "amenities": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "example": []
+                          },
+                          "possessionStatus": {
+                            "type": "string",
+                            "example": "Ready to Move"
+                          },
+                          "ownerDetails": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "example": "Rahul Adepu"
+                              },
+                              "phone": {
+                                "type": "string",
+                                "example": "+91-9876543210"
+                              },
+                              "email": {
+                                "type": "string",
+                                "example": "rahul@example.com"
+                              }
+                            }
+                          },
+                          "virtualTourLink": {
+                            "type": "string",
+                            "example": "https://virtualtour.example.com"
+                          },
+                          "featured": {
+                            "type": "boolean",
+                            "example": false
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2024-01-15T10:30:00.000Z"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2024-01-15T10:30:00.000Z"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Failed to fetch properties"
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "Database connection error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "summary": "Create new commercial property",
-        "description": "Create a new commercial property listing with all required details and images.",
+        "description": "Create a new commercial property listing with all required details and images. This endpoint accepts a comprehensive commercial property form submission.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Fill in all required fields according to the schema below\n3. Click \"Execute\" to submit the property\n\n**⚠️ Note:** Images should be pre-uploaded via /api/upload endpoint and URLs provided in the images array.",
         "tags": ["Commercial Properties"],
         "security": [{"bearerAuth": []}],
         "requestBody": {
@@ -92,25 +342,296 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["title", "description", "price", "location", "propertyType", "area"],
+                "required": [
+                  "propertyType",
+                  "projectName", 
+                  "fullAddress",
+                  "pinCode",
+                  "locality",
+                  "possessionStatus",
+                  "totalValuation",
+                  "minimumInvestmentTicket",
+                  "ownerDetails",
+                  "termsAccepted"
+                ],
                 "properties": {
-                  "title": {"type": "string", "description": "Property title", "example": "Premium Office Space"},
-                  "description": {"type": "string", "description": "Detailed property description"},
-                  "price": {"type": "number", "description": "Property price in INR", "example": 5000000},
-                  "location": {"type": "string", "description": "Property location", "example": "Mumbai, Maharashtra"},
-                  "propertyType": {"type": "string", "description": "Type of commercial property", "example": "Office"},
-                  "area": {"type": "number", "description": "Property area in sq ft", "example": 2500},
-                  "images": {"type": "array", "items": {"type": "string"}, "description": "Array of image URLs"}
+                  "propertyType": {
+                    "type": "string",
+                    "description": "Type of commercial property",
+                    "enum": ["commercial-office", "retail-shop", "co-working-space", "warehousing-industrial"],
+                    "example": "commercial-office"
+                  },
+                  "listingCategory": {
+                    "type": "string",
+                    "description": "Listing category",
+                    "example": "fractional-ownership"
+                  },
+                  "projectName": {
+                    "type": "string",
+                    "description": "Name of the commercial project",
+                    "example": "Cyber Hub Gurgaon"
+                  },
+                  "fullAddress": {
+                    "type": "string",
+                    "description": "Complete address of the property",
+                    "example": "Cyber Hub Road, Gurgaon, Haryana"
+                  },
+                  "pinCode": {
+                    "type": "string",
+                    "description": "PIN code of the location",
+                    "example": "122002"
+                  },
+                  "city": {
+                    "type": "string",
+                    "description": "City name",
+                    "example": "Gurgaon"
+                  },
+                  "locality": {
+                    "type": "string",
+                    "description": "Locality/area name",
+                    "example": "Cyber City"
+                  },
+                  "googleMapsPin": {
+                    "type": "string",
+                    "description": "Google Maps pin or coordinates",
+                    "example": "https://maps.google.com/..."
+                  },
+                  "possessionStatus": {
+                    "type": "string",
+                    "description": "Current possession status",
+                    "example": "Ready to Move"
+                  },
+                  "builtUpArea": {
+                    "type": "string",
+                    "description": "Built-up area in sq ft",
+                    "example": "2500"
+                  },
+                  "totalValuation": {
+                    "type": "string",
+                    "description": "Total property valuation in crores",
+                    "example": "5.0"
+                  },
+                  "minimumInvestmentTicket": {
+                    "type": "string",
+                    "description": "Minimum investment amount",
+                    "enum": ["₹10,000", "₹25,000", "₹50,000", "Custom Amount"],
+                    "example": "₹25,000"
+                  },
+                  "customTicketAmount": {
+                    "type": "string",
+                    "description": "Custom ticket amount (required if minimumInvestmentTicket is 'Custom Amount')",
+                    "example": "100000"
+                  },
+                  "targetRaiseAmount": {
+                    "type": "string",
+                    "description": "Target amount to raise",
+                    "example": "2.5"
+                  },
+                  "ownershipSplit": {
+                    "type": "string",
+                    "description": "Ownership split percentage",
+                    "example": "25"
+                  },
+                  "sharePercentage": {
+                    "type": "string",
+                    "description": "Share percentage available",
+                    "example": "25"
+                  },
+                  "rentalYield": {
+                    "type": "string",
+                    "description": "Expected rental yield percentage",
+                    "example": "6.5"
+                  },
+                  "annualROIProjection": {
+                    "type": "string",
+                    "description": "Annual ROI projection percentage",
+                    "example": "8.5"
+                  },
+                  "minimumHoldingPeriod": {
+                    "type": "string",
+                    "description": "Minimum holding period",
+                    "example": "3 years"
+                  },
+                  "exitOptions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Available exit options",
+                    "example": ["sell", "rent", "refinance"]
+                  },
+                  "documentsUploaded": {
+                    "type": "boolean",
+                    "description": "Whether documents are uploaded",
+                    "example": false
+                  },
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Array of pre-uploaded image URLs (from /api/upload)",
+                    "example": ["https://ik.imagekit.io/url1.jpg", "https://ik.imagekit.io/url2.jpg"]
+                  },
+                  "existingImages": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Array of existing image URLs",
+                    "example": []
+                  },
+                  "virtualTourLink": {
+                    "type": "string",
+                    "description": "Virtual tour link",
+                    "example": "https://virtualtour.example.com/..."
+                  },
+                  "requestVirtualTour": {
+                    "type": "boolean",
+                    "description": "Whether virtual tour is requested",
+                    "example": false
+                  },
+                  "highlights": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Property highlights",
+                    "example": ["Prime Location", "High ROI", "Ready to Move"]
+                  },
+                  "customHighlights": {
+                    "type": "string",
+                    "description": "Custom property highlights",
+                    "example": "Excellent connectivity and modern amenities"
+                  },
+                  "tenantName": {
+                    "type": "string",
+                    "description": "Current tenant name",
+                    "example": "Tech Corp Ltd"
+                  },
+                  "ownerDetails": {
+                    "type": "object",
+                    "required": ["name", "phone", "email"],
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "description": "Owner's full name",
+                        "example": "Rahul Adepu"
+                      },
+                      "phone": {
+                        "type": "string",
+                        "description": "Owner's phone number",
+                        "example": "+91-9876543210"
+                      },
+                      "email": {
+                        "type": "string",
+                        "description": "Owner's email address",
+                        "example": "rahul@example.com"
+                      },
+                      "companyName": {
+                        "type": "string",
+                        "description": "Owner's company name",
+                        "example": "Adepu Properties"
+                      }
+                    }
+                  },
+                  "termsAccepted": {
+                    "type": "boolean",
+                    "description": "Terms and conditions acceptance",
+                    "example": true
+                  },
+                  "coordinates": {
+                    "type": "object",
+                    "properties": {
+                      "latitude": {
+                        "type": "string",
+                        "description": "Latitude coordinate",
+                        "example": "28.6139"
+                      },
+                      "longitude": {
+                        "type": "string",
+                        "description": "Longitude coordinate",
+                        "example": "77.209"
+                      }
+                    }
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "200": {"description": "Property created successfully", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Success"}}}},
-          "400": {"description": "Missing required fields", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
-          "401": {"description": "Authentication required", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
-          "500": {"description": "Server error", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+          "201": {
+            "description": "Property created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Property submitted successfully for approval"
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "Created property object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error - missing required fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": ["Project name is required", "Full address is required"]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -128,8 +649,69 @@
           {"name": "maxArea", "in": "query", "description": "Maximum area in sq ft", "schema": {"type": "number"}, "example": 5000}
         ],
         "responses": {
-          "200": {"description": "Properties found successfully"},
-          "500": {"description": "Server error", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+          "200": {
+            "description": "Properties found successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "example": "64b29a1234abcd5678ef90ab"
+                          },
+                          "name": {
+                            "type": "string",
+                            "example": "Cyber Hub Gurgaon"
+                          },
+                          "type": {
+                            "type": "string",
+                            "example": "Office"
+                          },
+                          "riskLevel": {
+                            "type": "string",
+                            "enum": ["Low", "Medium", "High"],
+                            "example": "Medium"
+                          },
+                          "predictedAppreciation": {
+                            "type": "number",
+                            "example": 8.5
+                          },
+                          "occupancyRate": {
+                            "type": "number",
+                            "example": 85
+                          },
+                          "totalValue": {
+                            "type": "number",
+                            "example": 50000000
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -142,9 +724,156 @@
           {"name": "id", "in": "path", "required": true, "description": "Property ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
         ],
         "responses": {
-          "200": {"description": "Property retrieved successfully"},
-          "404": {"description": "Property not found", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
-          "500": {"description": "Server error", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+          "200": {
+            "description": "Property retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "64b29a1234abcd5678ef90ab"
+                        },
+                        "title": {
+                          "type": "string",
+                          "example": "Cyber Hub Gurgaon"
+                        },
+                        "projectName": {
+                          "type": "string",
+                          "example": "Cyber Hub Gurgaon"
+                        },
+                        "propertyType": {
+                          "type": "string",
+                          "example": "Office"
+                        },
+                        "location": {
+                          "type": "string",
+                          "example": "Cyber City, Gurgaon"
+                        },
+                        "locality": {
+                          "type": "string",
+                          "example": "Cyber City"
+                        },
+                        "address": {
+                          "type": "object",
+                          "properties": {
+                            "street": {
+                              "type": "string",
+                              "example": "Cyber Hub Road"
+                            },
+                            "city": {
+                              "type": "string",
+                              "example": "Gurgaon"
+                            },
+                            "state": {
+                              "type": "string",
+                              "example": "Haryana"
+                            },
+                            "zipCode": {
+                              "type": "string",
+                              "example": "122002"
+                            }
+                          }
+                        },
+                        "totalShares": {
+                          "type": "number",
+                          "example": 1000
+                        },
+                        "availableShares": {
+                          "type": "number",
+                          "example": 250
+                        },
+                        "pricePerShare": {
+                          "type": "number",
+                          "example": 50000
+                        },
+                        "currentYield": {
+                          "type": "number",
+                          "example": 6.5
+                        },
+                        "appreciationRate": {
+                          "type": "number",
+                          "example": 8.5
+                        },
+                        "currentROI": {
+                          "type": "number",
+                          "example": 8.5
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "pending_approval"
+                        },
+                        "images": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "example": ["https://ik.imagekit.io/url1.jpg"]
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Modern office space with excellent amenities"
+                        },
+                        "totalValuation": {
+                          "type": "number",
+                          "example": 5.0
+                        },
+                        "possessionStatus": {
+                          "type": "string",
+                          "example": "Ready to Move"
+                        },
+                        "ownerDetails": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "example": "Rahul Adepu"
+                            },
+                            "phone": {
+                              "type": "string",
+                              "example": "+91-9876543210"
+                            },
+                            "email": {
+                              "type": "string",
+                              "example": "rahul@example.com"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Property not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -289,7 +1018,7 @@
     "/api/upload": {
       "post": {
         "summary": "Upload images to ImageKit",
-        "description": "Upload images to ImageKit cloud storage and return permanent URLs.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Select image files to upload\n3. Click \"Execute\" to upload\n4. Copy the returned URLs for property creation\n\n**💡 Note:** This endpoint is used before creating commercial properties.",
+        "description": "Upload images to ImageKit cloud storage and return permanent URLs.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Select a single image file to upload\n3. Click \"Execute\" to upload\n4. Copy the returned URL for property creation\n\n**💡 Note:** This endpoint uploads one file at a time. For multiple files, call this endpoint multiple times.",
         "tags": ["File Upload"],
         "security": [{"bearerAuth": []}],
         "requestBody": {
@@ -298,19 +1027,76 @@
             "multipart/form-data": {
               "schema": {
                 "type": "object",
-                "required": ["files"],
+                "required": ["file"],
                 "properties": {
-                  "files": {"type": "array", "items": {"type": "string", "format": "binary"}, "description": "Image files to upload (JPEG, PNG, etc.)"}
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Single image file to upload (JPEG, PNG, max 5MB)"
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "200": {"description": "Images uploaded successfully"},
-          "400": {"description": "No files provided", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
-          "401": {"description": "Authentication required", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
-          "500": {"description": "Upload failed", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+          "200": {
+            "description": "Image uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "Uploaded image URL",
+                      "example": "https://ik.imagekit.io/100gaj/123456-abc123.jpg"
+                    },
+                    "thumbnailUrl": {
+                      "type": "string",
+                      "description": "Thumbnail URL",
+                      "example": "https://ik.imagekit.io/100gaj/tr:w-300/123456-abc123.jpg"
+                    },
+                    "fileId": {
+                      "type": "string",
+                      "description": "ImageKit file ID",
+                      "example": "abc123def456"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No file provided or invalid file",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "No file uploaded"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Upload failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -325,28 +1111,84 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["name", "email", "subject", "message"],
+                "required": ["fullName", "email", "message"],
                 "properties": {
-                  "name": {"type": "string", "description": "Contact person's name", "example": "John Doe"},
-                  "email": {"type": "string", "format": "email", "description": "Contact person's email", "example": "john@example.com"},
-                  "subject": {"type": "string", "description": "Subject of the inquiry", "example": "General Question"},
-                  "message": {"type": "string", "description": "Detailed message", "example": "I have a question about your services..."}
+                  "fullName": {
+                    "type": "string",
+                    "description": "Contact person's full name",
+                    "example": "John Doe"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Contact person's email address",
+                    "example": "john@example.com"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "description": "Contact person's phone number (optional)",
+                    "example": "+91-9876543210"
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "Detailed message",
+                    "example": "I have a question about your services..."
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "200": {"description": "Contact form submitted successfully", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Success"}}}},
-          "400": {"description": "Missing required fields", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
-          "500": {"description": "Submission failed", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+          "200": {
+            "description": "Contact form submitted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Email sent successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Missing required fields"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Submission failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/api/admin/kyc/{id}": {
-      "put": {
+      "patch": {
         "summary": "Update KYC status (Admin only)",
-        "description": "Update KYC application status by administrators.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n- Admin privileges required\n\n**📋 Testing Steps:**\n1. Authorize with admin JWT token first\n2. Provide KYC ID in the path\n3. Fill in status and reason\n4. Click \"Execute\" to update\n\n**💡 Note:** This endpoint is for administrators to approve/reject KYC applications.",
+        "description": "Update KYC application status by administrators.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n- Admin privileges required\n\n**📋 Testing Steps:**\n1. Authorize with admin JWT token first\n2. Provide KYC ID in the path\n3. Fill in status and reason\n4. Click \"Execute\" to update\n\n**💡 Note:** This endpoint is for administrators to approve/reject KYC applications. When status is set to 'accepted', an OTP is automatically generated for property posting.",
         "tags": ["Admin"],
         "security": [{"bearerAuth": []}],
         "parameters": [
@@ -360,19 +1202,143 @@
                 "type": "object",
                 "required": ["status", "reason"],
                 "properties": {
-                  "status": {"type": "string", "enum": ["accepted", "rejected"], "description": "New KYC status", "example": "accepted"},
-                  "reason": {"type": "string", "description": "Reason for status change", "example": "Documents verified successfully"}
+                  "status": {
+                    "type": "string",
+                    "enum": ["accepted", "rejected"],
+                    "description": "New KYC status",
+                    "example": "accepted"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "Reason for status change",
+                    "example": "Documents verified successfully"
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "200": {"description": "KYC status updated successfully", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Success"}}}},
-          "400": {"description": "Invalid status or missing fields", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
-          "401": {"description": "Authentication required", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
-          "404": {"description": "KYC application not found", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
-          "500": {"description": "Update failed", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+          "200": {
+            "description": "KYC status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "kyc": {
+                      "type": "object",
+                      "description": "Updated KYC object"
+                    },
+                    "otp": {
+                      "type": "string",
+                      "description": "Generated OTP for property posting (only when status is 'accepted')",
+                      "example": "123456"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid KYC ID or missing fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Invalid KYC ID"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "KYC application not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "KYC request not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Update failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Get KYC request by ID (Admin only)",
+        "description": "Retrieve a specific KYC request by ID for administrative review.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n- Admin privileges required",
+        "tags": ["Admin"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "KYC application ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
+        ],
+        "responses": {
+          "200": {
+            "description": "KYC request retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "kyc": {
+                      "type": "object",
+                      "description": "KYC request object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "KYC request not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "KYC request not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     }
