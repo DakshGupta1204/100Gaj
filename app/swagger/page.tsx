@@ -5,7 +5,7 @@ import "swagger-ui-react/swagger-ui.css";
 export default function DocsPage() {
   return (
     <div className="bg-white text-black dark:bg-white dark:text-black">
-      <SwaggerUI url="/api/docs" />
+      <SwaggerUI url="/swagger.json" />
     </div>
   );
 }

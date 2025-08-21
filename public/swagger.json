@@ -1,0 +1,380 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Equity Platform API",
+    "version": "1.0.0",
+    "description": "# 🔐 Equity Platform API Documentation\n\n## **Authentication Required for Most Endpoints**\n\n**⚠️ IMPORTANT:** Most endpoints require JWT authentication. Before testing any protected endpoints:\n\n1. **Click the \"Authorize\" button (🔒)** at the top of this page\n2. **Enter your JWT token** in the `bearerAuth` field\n3. **Click \"Authorize\"** to enable protected endpoints\n4. **Click \"Close\"** to return to the documentation\n\n## **Available Endpoints**\n\n- **Commercial Properties**: Search and manage commercial properties\n- **KYC Management**: Submit and manage KYC applications\n- **Authentication**: Login, signup, and account management\n- **File Upload**: Image upload functionality\n- **Contact**: Contact form submission\n- **Admin**: KYC management for administrators\n\n## **Testing Notes**\n\n- **Protected Endpoints**: Require authentication and specific user permissions\n- **File Uploads**: Use multipart/form-data for file uploads\n- **Error Handling**: All endpoints return detailed error messages\n\n## **Need Help?**\n\nCheck the individual endpoint descriptions for detailed testing instructions and requirements."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Development server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Commercial",
+      "description": "Commercial property management endpoints"
+    },
+    {
+      "name": "Commercial Properties",
+      "description": "Commercial property search and retrieval endpoints"
+    },
+    {
+      "name": "KYC",
+      "description": "Know Your Customer verification and management endpoints"
+    },
+    {
+      "name": "Authentication",
+      "description": "User authentication and account management endpoints"
+    },
+    {
+      "name": "File Upload",
+      "description": "Image and file upload endpoints"
+    },
+    {
+      "name": "Contact",
+      "description": "Contact form and communication endpoints"
+    },
+    {
+      "name": "Admin",
+      "description": "Administrative management endpoints"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message"
+          }
+        }
+      },
+      "Success": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Success status"
+          },
+          "message": {
+            "type": "string",
+            "description": "Success message"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/api/commercial": {
+      "post": {
+        "summary": "Create new commercial property",
+        "description": "Create a new commercial property listing with all required details and images.",
+        "tags": ["Commercial Properties"],
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "description", "price", "location", "propertyType", "area"],
+                "properties": {
+                  "title": {"type": "string", "description": "Property title", "example": "Premium Office Space"},
+                  "description": {"type": "string", "description": "Detailed property description"},
+                  "price": {"type": "number", "description": "Property price in INR", "example": 5000000},
+                  "location": {"type": "string", "description": "Property location", "example": "Mumbai, Maharashtra"},
+                  "propertyType": {"type": "string", "description": "Type of commercial property", "example": "Office"},
+                  "area": {"type": "number", "description": "Property area in sq ft", "example": 2500},
+                  "images": {"type": "array", "items": {"type": "string"}, "description": "Array of image URLs"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Property created successfully", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Success"}}}},
+          "400": {"description": "Missing required fields", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+          "401": {"description": "Authentication required", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+          "500": {"description": "Server error", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+        }
+      }
+    },
+    "/api/commercial/search": {
+      "get": {
+        "summary": "Search commercial properties",
+        "description": "Search commercial properties with various filters like location, price range, property type, etc.",
+        "tags": ["Commercial Properties"],
+        "parameters": [
+          {"name": "location", "in": "query", "description": "Property location", "schema": {"type": "string"}, "example": "Mumbai"},
+          {"name": "minPrice", "in": "query", "description": "Minimum price in INR", "schema": {"type": "number"}, "example": 1000000},
+          {"name": "maxPrice", "in": "query", "description": "Maximum price in INR", "schema": {"type": "number"}, "example": 10000000},
+          {"name": "propertyType", "in": "query", "description": "Type of commercial property", "schema": {"type": "string"}, "example": "Office"},
+          {"name": "minArea", "in": "query", "description": "Minimum area in sq ft", "schema": {"type": "number"}, "example": 1000},
+          {"name": "maxArea", "in": "query", "description": "Maximum area in sq ft", "schema": {"type": "number"}, "example": 5000}
+        ],
+        "responses": {
+          "200": {"description": "Properties found successfully"},
+          "500": {"description": "Server error", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+        }
+      }
+    },
+    "/api/commercial/{id}": {
+      "get": {
+        "summary": "Get commercial property by ID",
+        "description": "Retrieve detailed information about a specific commercial property.",
+        "tags": ["Commercial Properties"],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "Property ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
+        ],
+        "responses": {
+          "200": {"description": "Property retrieved successfully"},
+          "404": {"description": "Property not found", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+          "500": {"description": "Server error", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+        }
+      }
+    },
+    "/api/kyc": {
+      "post": {
+        "summary": "Submit KYC application",
+        "description": "Submit a new KYC (Know Your Customer) application with personal details and PAN card image.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n- Click the \"Authorize\" button (🔒) at the top of the page\n- Enter your token in the `bearerAuth` field\n- Click \"Authorize\" to enable this endpoint\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Fill in all required fields (name, email, pan, panImage)\n3. Upload a PAN card image file\n4. Click \"Execute\" to submit your KYC application\n\n**💡 Note:** After submission, your KYC will have status \"pending\" and needs admin approval.",
+        "tags": ["KYC"],
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "pan", "panImage"],
+                "properties": {
+                  "name": {"type": "string", "description": "Full name of the applicant", "example": "Rahul Adepu"},
+                  "email": {"type": "string", "format": "email", "description": "Email address of the applicant", "example": "rahul@example.com"},
+                  "pan": {"type": "string", "description": "PAN (Permanent Account Number) of the applicant", "pattern": "^[A-Z]{5}[0-9]{4}[A-Z]$", "example": "ABCDE1234F"},
+                  "panImage": {"type": "string", "format": "binary", "description": "PAN card image file (JPEG, PNG, etc.)"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "KYC application submitted successfully"},
+          "400": {"description": "Missing required fields", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+          "401": {"description": "Authentication required or invalid token", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+          "500": {"description": "Server error", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+        }
+      },
+      "put": {
+        "summary": "Send OTP for property posting",
+        "description": "Generate and send OTP to user's email for property posting verification after KYC approval.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n- Click the \"Authorize\" button (🔒) at the top of the page\n- Enter your token in the `bearerAuth` field\n- Click \"Authorize\" to enable this endpoint\n\n**⚠️ CRITICAL: KYC Status Must Be \"Accepted\"**\n- This endpoint only works if your KYC status is \"accepted\"\n- If your KYC is still \"pending\", you need to manually update the database\n- **Database Update Required:** Change KYC status from \"pending\" to \"accepted\"\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. **Manually update your KYC status to \"accepted\" in the database**\n3. Click \"Execute\" to send OTP\n4. OTP will be sent to your registered email address\n\n**💡 Note:** The OTP is valid for 10 minutes and stored in the database.",
+        "tags": ["KYC"],
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {"description": "OTP sent successfully", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Success"}}}},
+          "400": {"description": "KYC not accepted or user not found", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+          "401": {"description": "Authentication required or invalid token", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+          "500": {"description": "Server error", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+        }
+      },
+      "get": {
+        "summary": "Get KYC requests (Admin only)",
+        "description": "Retrieve all KYC requests, separated into pending and reviewed categories.\n\n**📋 Note:** This endpoint is typically used by administrators to view and manage KYC requests.",
+        "tags": ["KYC"],
+        "responses": {
+          "200": {"description": "KYC requests retrieved successfully"},
+          "500": {"description": "Server error", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+        }
+      }
+    },
+    "/api/kyc/verify-otp": {
+      "post": {
+        "summary": "Verify OTP for property posting",
+        "description": "Verify the OTP sent to user's email for property posting verification.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**⚠️ CRITICAL: Use Latest OTP from Database**\n- The OTP in the database changes each time you call PUT /api/kyc\n- **Always use the most recent OTP** stored in the database\n- Check the database for the current OTP value\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Get the latest OTP from the database (check KYC record)\n3. Fill in the OTP field with the latest value\n4. Click \"Execute\" to verify\n\n**💡 Note:** OTP verification is required before posting commercial properties.",
+        "tags": ["KYC"],
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["otp"],
+                "properties": {
+                  "otp": {"type": "string", "description": "OTP received via email (use latest from database)", "example": "123456"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "OTP verified successfully", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Success"}}}},
+          "400": {"description": "Invalid OTP or missing fields", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+          "401": {"description": "Authentication required or invalid token", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+          "500": {"description": "Server error", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "User login",
+        "description": "Authenticate user with email and password to receive JWT token.\n\n**📋 Testing Steps:**\n1. Fill in email and password\n2. Click \"Execute\" to login\n3. Copy the returned JWT token for other endpoints\n\n**💡 Note:** Use the returned token in the Authorize button for protected endpoints.",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": {"type": "string", "format": "email", "description": "User's email address", "example": "user@example.com"},
+                  "password": {"type": "string", "description": "User's password", "example": "password123"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Login successful"},
+          "400": {"description": "Missing required fields", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+          "401": {"description": "Invalid credentials", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+          "403": {"description": "Email not verified", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+          "500": {"description": "Server error", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+        }
+      }
+    },
+    "/api/auth/signup": {
+      "post": {
+        "summary": "User registration",
+        "description": "Register a new user account with name, email, and password.\n\n**📋 Testing Steps:**\n1. Fill in name, email, password, and isAgent flag\n2. Click \"Execute\" to create account\n3. Check email for verification code\n\n**💡 Note:** Account requires email verification before login.",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password"],
+                "properties": {
+                  "name": {"type": "string", "description": "User's full name", "example": "John Doe"},
+                  "email": {"type": "string", "format": "email", "description": "User's email address", "example": "user@example.com"},
+                  "password": {"type": "string", "description": "User's password (min 8 characters)", "example": "password123"},
+                  "isAgent": {"type": "boolean", "description": "Whether user is registering as an agent", "example": false}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Account created successfully"},
+          "400": {"description": "Validation error", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+          "500": {"description": "Server error", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+        }
+      }
+    },
+    "/api/upload": {
+      "post": {
+        "summary": "Upload images to ImageKit",
+        "description": "Upload images to ImageKit cloud storage and return permanent URLs.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Select image files to upload\n3. Click \"Execute\" to upload\n4. Copy the returned URLs for property creation\n\n**💡 Note:** This endpoint is used before creating commercial properties.",
+        "tags": ["File Upload"],
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["files"],
+                "properties": {
+                  "files": {"type": "array", "items": {"type": "string", "format": "binary"}, "description": "Image files to upload (JPEG, PNG, etc.)"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Images uploaded successfully"},
+          "400": {"description": "No files provided", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+          "401": {"description": "Authentication required", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+          "500": {"description": "Upload failed", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+        }
+      }
+    },
+    "/api/contact": {
+      "post": {
+        "summary": "Submit contact form",
+        "description": "Submit a contact form with user inquiry details.\n\n**📋 Testing Steps:**\n1. Fill in all required fields\n2. Click \"Execute\" to submit\n3. Form will be sent to support team\n\n**💡 Note:** This endpoint doesn't require authentication.",
+        "tags": ["Contact"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "subject", "message"],
+                "properties": {
+                  "name": {"type": "string", "description": "Contact person's name", "example": "John Doe"},
+                  "email": {"type": "string", "format": "email", "description": "Contact person's email", "example": "john@example.com"},
+                  "subject": {"type": "string", "description": "Subject of the inquiry", "example": "General Question"},
+                  "message": {"type": "string", "description": "Detailed message", "example": "I have a question about your services..."}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Contact form submitted successfully", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Success"}}}},
+          "400": {"description": "Missing required fields", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+          "500": {"description": "Submission failed", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+        }
+      }
+    },
+    "/api/admin/kyc/{id}": {
+      "put": {
+        "summary": "Update KYC status (Admin only)",
+        "description": "Update KYC application status by administrators.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n- Admin privileges required\n\n**📋 Testing Steps:**\n1. Authorize with admin JWT token first\n2. Provide KYC ID in the path\n3. Fill in status and reason\n4. Click \"Execute\" to update\n\n**💡 Note:** This endpoint is for administrators to approve/reject KYC applications.",
+        "tags": ["Admin"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "KYC application ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["status", "reason"],
+                "properties": {
+                  "status": {"type": "string", "enum": ["accepted", "rejected"], "description": "New KYC status", "example": "accepted"},
+                  "reason": {"type": "string", "description": "Reason for status change", "example": "Documents verified successfully"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "KYC status updated successfully", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Success"}}}},
+          "400": {"description": "Invalid status or missing fields", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+          "401": {"description": "Authentication required", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+          "404": {"description": "KYC application not found", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+          "500": {"description": "Update failed", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+        }
+      }
+    }
+  }
+}
