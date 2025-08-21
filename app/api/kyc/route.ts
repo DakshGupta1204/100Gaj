@@ -39,7 +39,22 @@ function getUserIdFromAuthHeader(authHeader: string | null) {
  * /api/kyc:
  *   post:
  *     summary: Submit KYC application
- *     description: Submit a new KYC (Know Your Customer) application with personal details and PAN card image. **Authentication required.**
+ *     description: |
+ *       Submit a new KYC (Know Your Customer) application with personal details and PAN card image.
+ *       
+ *       **🔐 IMPORTANT: Authentication Required**
+ *       - You must authorize with a valid JWT token first
+ *       - Click the "Authorize" button (🔒) at the top of the page
+ *       - Enter your token in the `bearerAuth` field
+ *       - Click "Authorize" to enable this endpoint
+ *       
+ *       **📋 Testing Steps:**
+ *       1. Authorize with your JWT token first
+ *       2. Fill in all required fields (name, email, pan, panImage)
+ *       3. Upload a PAN card image file
+ *       4. Click "Execute" to submit your KYC application
+ *       
+ *       **💡 Note:** After submission, your KYC will have status "pending" and needs admin approval.
  *     tags:
  *       - KYC
  *     security:
@@ -142,7 +157,27 @@ function getUserIdFromAuthHeader(authHeader: string | null) {
  *                   example: "Failed to submit KYC"
  *   put:
  *     summary: Send OTP for property posting
- *     description: Generate and send OTP to user's email for property posting verification after KYC approval. **Authentication required.**
+ *     description: |
+ *       Generate and send OTP to user's email for property posting verification after KYC approval.
+ *       
+ *       **🔐 IMPORTANT: Authentication Required**
+ *       - You must authorize with a valid JWT token first
+ *       - Click the "Authorize" button (🔒) at the top of the page
+ *       - Enter your token in the `bearerAuth` field
+ *       - Click "Authorize" to enable this endpoint
+ *       
+ *       **⚠️ CRITICAL: KYC Status Must Be "Accepted"**
+ *       - This endpoint only works if your KYC status is "accepted"
+ *       - If your KYC is still "pending", you need to manually update the database
+ *       - **Database Update Required:** Change KYC status from "pending" to "accepted"
+ *       
+ *       **📋 Testing Steps:**
+ *       1. Authorize with your JWT token first
+ *       2. **Manually update your KYC status to "accepted" in the database**
+ *       3. Click "Execute" to send OTP
+ *       4. OTP will be sent to your registered email address
+ *       
+ *       **💡 Note:** The OTP is valid for 10 minutes and stored in the database.
  *     tags:
  *       - KYC
  *     security:
@@ -193,7 +228,10 @@ function getUserIdFromAuthHeader(authHeader: string | null) {
  *                   example: "Failed to send OTP"
  *   get:
  *     summary: Get KYC requests (Admin only)
- *     description: Retrieve all KYC requests, separated into pending and reviewed categories
+ *     description: |
+ *       Retrieve all KYC requests, separated into pending and reviewed categories.
+ *       
+ *       **📋 Note:** This endpoint is typically used by administrators to view and manage KYC requests.
  *     tags:
  *       - KYC
  *     responses:

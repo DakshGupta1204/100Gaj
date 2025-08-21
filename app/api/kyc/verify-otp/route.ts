@@ -24,7 +24,28 @@ const KycRequest = mongoose.models.KycRequest || mongoose.model("KycRequest", Ky
  * /api/kyc/verify-otp:
  *   post:
  *     summary: Verify OTP for property posting
- *     description: Verify the OTP sent to user's email to enable property posting after KYC approval
+ *     description: |
+ *       Verify the OTP received via email for property posting verification.
+ *       
+ *       **🔐 IMPORTANT: Authentication Required**
+ *       - You must authorize with a valid JWT token first
+ *       - Click the "Authorize" button (🔒) at the top of the page
+ *       - Enter your token in the `bearerAuth` field
+ *       - Click "Authorize" to enable this endpoint
+ *       
+ *       **⚠️ CRITICAL: Use Latest OTP from Database**
+ *       - The OTP is stored in the database when you call the PUT `/api/kyc` endpoint
+ *       - **You must use the latest OTP value stored in the database**
+ *       - OTP expires after 10 minutes
+ *       - Check the database for the current OTP value before testing
+ *       
+ *       **📋 Testing Steps:**
+ *       1. Authorize with your JWT token first
+ *       2. **Get the latest OTP from the database** (check KYC record)
+ *       3. Fill in the request body with the current OTP
+ *       4. Click "Execute" to verify the OTP
+ *       
+ *       **💡 Note:** This endpoint requires a KYC record with status "accepted" and a valid OTP.
  *     tags:
  *       - KYC
  *     security:
@@ -48,7 +69,7 @@ const KycRequest = mongoose.models.KycRequest || mongoose.model("KycRequest", Ky
  *                 example: "64b29a1234abcd5678ef90ab"
  *               otp:
  *                 type: string
- *                 description: 6-digit OTP received via email
+ *                 description: 6-digit OTP received via email (use latest from database)
  *                 pattern: "^[0-9]{6}$"
  *                 example: "123456"
  *     responses:
