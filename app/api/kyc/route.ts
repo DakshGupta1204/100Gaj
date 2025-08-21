@@ -22,17 +22,14 @@ const KycRequest = mongoose.models.KycRequest || mongoose.model("KycRequest", Ky
 
 function getUserIdFromAuthHeader(authHeader: string | null) {
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    console.log('Invalid auth header:', authHeader);
     return null;
   }
   
   try {
     const token = authHeader.substring(7);
     const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-    console.log('JWT payload:', payload);
     return payload.userId || payload.sub;
   } catch (error) {
-    console.error('Error parsing JWT token:', error);
     return null;
   }
 }
@@ -42,7 +39,7 @@ function getUserIdFromAuthHeader(authHeader: string | null) {
  * /api/kyc:
  *   post:
  *     summary: Submit KYC application
- *     description: Submit a new KYC (Know Your Customer) application with personal details and PAN card image
+ *     description: Submit a new KYC (Know Your Customer) application with personal details and PAN card image. **Authentication required.**
  *     tags:
  *       - KYC
  *     security:
@@ -124,7 +121,15 @@ function getUserIdFromAuthHeader(authHeader: string | null) {
  *                   type: string
  *                   example: "All fields are required"
  *       401:
- *         description: Unauthorized - missing or invalid token
+ *         description: Authentication required or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Authentication required. Please provide a valid token."
  *       500:
  *         description: Server error
  *         content:
@@ -137,7 +142,7 @@ function getUserIdFromAuthHeader(authHeader: string | null) {
  *                   example: "Failed to submit KYC"
  *   put:
  *     summary: Send OTP for property posting
- *     description: Generate and send OTP to user's email for property posting verification after KYC approval
+ *     description: Generate and send OTP to user's email for property posting verification after KYC approval. **Authentication required.**
  *     tags:
  *       - KYC
  *     security:
@@ -167,7 +172,15 @@ function getUserIdFromAuthHeader(authHeader: string | null) {
  *                   type: string
  *                   example: "KYC not accepted or not found"
  *       401:
- *         description: Unauthorized - missing or invalid token
+ *         description: Authentication required or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Authentication required. Please provide a valid token."
  *       500:
  *         description: Server error
  *         content:
@@ -279,16 +292,29 @@ export async function POST(req: NextRequest) {
     const pan = formData.get("pan") as string;
     const email = formData.get("email") as string | null;
     const panImage = formData.get("panImage");
+    
     if (!name || !pan || !panImage) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
+    
     let panImageUrl = "";
     if (panImage && typeof panImage === "object" && "arrayBuffer" in panImage) {
       const buffer = Buffer.from(await panImage.arrayBuffer());
       panImageUrl = `data:${panImage.type};base64,${buffer.toString("base64")}`;
     }
+    
     const authHeader = req.headers.get("authorization");
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: "Authentication required. Please provide a valid token." }, { status: 401 });
+    }
+    
     const userId = getUserIdFromAuthHeader(authHeader);
+    
+    if (!userId) {
+      return NextResponse.json({ error: "Invalid or expired token. Please login again." }, { status: 401 });
+    }
+    
     const kyc = await KycRequest.create({
       userId,
       name,
@@ -297,6 +323,7 @@ export async function POST(req: NextRequest) {
       status: "pending",
       email: email || "",
     });
+    
     return NextResponse.json({ success: true, kyc });
   } catch (error) {
     return NextResponse.json({ error: "Failed to submit KYC" }, { status: 500 });
@@ -308,6 +335,11 @@ export async function PUT(req: NextRequest) {
   try {
     await connectDB();
     const authHeader = req.headers.get("authorization");
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: "Authentication required. Please provide a valid token." }, { status: 401 });
+    }
+    
     const userId = getUserIdFromAuthHeader(authHeader);
     
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
@@ -327,12 +359,6 @@ export async function PUT(req: NextRequest) {
     kyc.otpVerified = false;
     await kyc.save();
     
-    console.log("Generated OTP for KYC:", {
-      kycId: kyc._id,
-      userId: kyc.userId,
-      otp: otp,
-      expiry: otpExpiry
-    });
     // Send email
     const emailHtml = `<div style='font-family: Arial, sans-serif;'><h2>Your Property Posting OTP</h2><p>Your OTP is: <b>${otp}</b></p><p>This OTP is valid for 10 minutes.</p></div>`;
     try {

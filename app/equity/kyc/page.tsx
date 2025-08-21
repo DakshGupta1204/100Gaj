@@ -50,12 +50,15 @@ export default function KycPage() {
     }
     setSubmitting(true);
     try {
-      const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+      // Equity platform stores token in sessionStorage, not localStorage
+      const token = sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
+      
       if (!token) {
         setError("You must be logged in to complete KYC.");
         setSubmitting(false);
         return;
       }
+      
       const formData = new FormData();
       formData.append("name", name);
       formData.append("email", email);
@@ -70,7 +73,9 @@ export default function KycPage() {
         },
         body: formData,
       });
+      
       const data = await res.json();
+      
       if (!res.ok) {
         setError(data.error || "Failed to submit KYC");
         setSubmitting(false);
