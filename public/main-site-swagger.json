@@ -3,7 +3,7 @@
   "info": {
     "title": "100Gaj Main Site API",
     "version": "1.0.0",
-    "description": "# 🏠 100Gaj Main Site API Documentation\n\n## **Authentication Required for Most Endpoints**\n\n**⚠️ IMPORTANT:** Most endpoints require JWT authentication. Before testing any protected endpoints:\n\n1. **Click the \"Authorize\" button (🔒)** at the top of this page\n2. **Enter your JWT token** in the `bearerAuth` field\n3. **Click \"Authorize\"** to enable protected endpoints\n4. **Click \"Close\"** to return to the documentation\n\n## **Available Endpoints**\n\n- **Properties**: Search, create, and manage residential properties\n- **Projects**: Builder projects and new developments\n- **Agents**: Real estate agent management and search\n- **Authentication**: Google OAuth and user management\n- **User Management**: Favorites, inquiries, and profile management\n- **File Upload**: Image upload functionality\n- **Contact & Support**: Contact forms and support requests\n- **AI Tools**: AI-powered property insights and tools\n\n## **Testing Notes**\n\n- **Protected Endpoints**: Require authentication and specific user permissions\n- **File Uploads**: Use multipart/form-data for file uploads\n- **Error Handling**: All endpoints return detailed error messages\n\n## **Need Help?**\n\nCheck the individual endpoint descriptions for detailed testing instructions and requirements."
+    "description": "# 🏠 100Gaj Main Site API Documentation\n\n## **Main Site Only - Core Real Estate Platform**\n\nThis documentation covers **ONLY** the main site APIs for residential real estate. For equity investment APIs, see the equity platform documentation.\n\n## **Authentication Required for Most Endpoints**\n\n**⚠️ IMPORTANT:** Most endpoints require JWT authentication. Before testing any protected endpoints:\n\n1. **Click the \"Authorize\" button (🔒)** at the top of this page\n2. **Enter your JWT token** in the `bearerAuth` field\n3. **Click \"Authorize\"** to enable protected endpoints\n4. **Click \"Close\"** to return to the documentation\n\n## **Available Endpoints**\n\n- **Properties**: Search, create, and manage residential properties\n- **Projects**: Builder projects and new developments\n- **Agents**: Real estate agent management and search\n- **Authentication**: User registration, login, and account management\n- **User Management**: Favorites, inquiries, profile, and saved searches\n- **File Upload**: Image upload functionality\n- **Contact & Support**: Contact forms and support requests\n- **AI Tools**: AI-powered property insights and tools\n- **Verification**: Agent and builder verification requests\n\n## **Testing Notes**\n\n- **Protected Endpoints**: Require authentication and specific user permissions\n- **File Uploads**: Use multipart/form-data for file uploads\n- **Error Handling**: All endpoints return detailed error messages\n\n## **Need Help?**\n\nCheck the individual endpoint descriptions for detailed testing instructions and requirements."
   },
   "servers": [
     {
@@ -26,7 +26,7 @@
     },
     {
       "name": "Authentication",
-      "description": "Google OAuth and user authentication"
+      "description": "User authentication and account management"
     },
     {
       "name": "User Management",
@@ -51,6 +51,10 @@
     {
       "name": "Location Services",
       "description": "Geocoding and location services"
+    },
+    {
+      "name": "Verification Requests",
+      "description": "Agent and builder verification request management"
     }
   ],
   "components": {
@@ -268,6 +272,459 @@
         }
       }
     },
+    "/api/properties/assigned": {
+      "get": {
+        "summary": "Get properties assigned to agent",
+        "description": "Retrieve all properties assigned to the authenticated agent.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n- User must be an agent\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Use pagination parameters if needed\n3. Click \"Execute\" to fetch assigned properties\n\n**💡 Note:** Returns properties with assignment details and contact information.",
+        "tags": ["Properties"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "page", "in": "query", "description": "Page number", "schema": {"type": "string"}, "example": "1"},
+          {"name": "limit", "in": "query", "description": "Results per page", "schema": {"type": "string"}, "example": "10"},
+          {"name": "status", "in": "query", "description": "Filter by property status", "schema": {"type": "string"}, "example": "active"}
+        ],
+        "responses": {
+          "200": {
+            "description": "Assigned properties retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "properties": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
+                          "title": {"type": "string", "example": "Modern 2BHK Apartment"},
+                          "address": {"type": "object", "description": "Property address"},
+                          "price": {"type": "number", "example": 7500000},
+                          "status": {"type": "string", "example": "active"},
+                          "assignedDate": {"type": "string", "format": "date-time"},
+                          "inquiries": {"type": "number", "example": 5}
+                        }
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "total": {"type": "number", "example": 15},
+                        "page": {"type": "number", "example": 1},
+                        "limit": {"type": "number", "example": 10},
+                        "pages": {"type": "number", "example": 2}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "403": {
+            "description": "Agent access required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/properties/user": {
+      "get": {
+        "summary": "Get user's own properties",
+        "description": "Retrieve all properties owned by the authenticated user.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Click \"Execute\" to fetch your properties\n\n**💡 Note:** Returns properties with ownership details and management options.",
+        "tags": ["Properties"],
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "User properties retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean", "example": true},
+                    "count": {"type": "number", "example": 3},
+                    "properties": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
+                          "title": {"type": "string", "example": "My 2BHK Apartment"},
+                          "address": {"type": "object", "description": "Property address"},
+                          "price": {"type": "number", "example": 7500000},
+                          "status": {"type": "string", "example": "active"},
+                          "views": {"type": "number", "example": 45},
+                          "inquiries": {"type": "number", "example": 8}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/properties/{id}/assign-agent": {
+      "post": {
+        "summary": "Assign agent to property",
+        "description": "Assign a specific agent to manage a property.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n- User must be the property owner\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Provide the property ID in the URL\n3. Provide agent ID in request body\n4. Click \"Execute\" to assign agent",
+        "tags": ["Properties"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "Property ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["agentId"],
+                "properties": {
+                  "agentId": {"type": "string", "description": "Agent ID to assign", "example": "64b29a1234abcd5678ef90ab"},
+                  "commission": {"type": "number", "description": "Commission percentage", "example": 2.5}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Agent assigned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean", "example": true},
+                    "message": {"type": "string", "example": "Agent assigned successfully"},
+                    "assignment": {"type": "object", "description": "Assignment details"}
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "403": {
+            "description": "Property owner access required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "404": {
+            "description": "Property or agent not found",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/properties/{id}/virtual-tour": {
+      "post": {
+        "summary": "Add virtual tour to property",
+        "description": "Add a virtual tour link to a property.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n- User must be the property owner or assigned agent\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Provide the property ID in the URL\n3. Provide virtual tour URL\n4. Click \"Execute\" to add virtual tour",
+        "tags": ["Properties"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "Property ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["virtualTourUrl"],
+                "properties": {
+                  "virtualTourUrl": {"type": "string", "format": "uri", "description": "Virtual tour URL", "example": "https://example.com/virtual-tour"},
+                  "description": {"type": "string", "description": "Virtual tour description", "example": "360° virtual tour of the property"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Virtual tour added successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean", "example": true},
+                    "message": {"type": "string", "example": "Virtual tour added successfully"},
+                    "virtualTour": {"type": "object", "description": "Virtual tour details"}
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "403": {
+            "description": "Property owner or agent access required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "404": {
+            "description": "Property not found",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/properties/{id}/inquiries": {
+      "post": {
+        "summary": "Send inquiry for a property",
+        "description": "Send an inquiry message to the owner of a specific property.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Provide the property ID in the URL\n3. Fill in the message and optional phone\n4. Click \"Execute\" to send inquiry\n\n**⚠️ Note:** You cannot send inquiries to your own properties.",
+        "tags": ["Properties"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "Property ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["message"],
+                "properties": {
+                  "message": {"type": "string", "description": "Inquiry message", "example": "I'm interested in this property. Can you provide more details?"},
+                  "phone": {"type": "string", "description": "Contact phone number (optional)", "example": "+91-9876543210"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Inquiry sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean", "example": true},
+                    "message": {"type": "string", "example": "Inquiry sent successfully"},
+                    "inquiry": {
+                      "type": "object",
+                      "properties": {
+                        "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
+                        "property": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
+                        "message": {"type": "string", "example": "I'm interested in this property..."},
+                        "createdAt": {"type": "string", "format": "date-time"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or own property",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "404": {
+            "description": "Property not found",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/properties/favorites": {
+      "get": {
+        "summary": "Get user's favorite properties",
+        "description": "Retrieve all favorite properties for the authenticated user.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Provide userId as query parameter\n3. Click \"Execute\" to fetch favorite properties\n\n**💡 Note:** Returns properties with full details from favorites collection.",
+        "tags": ["Properties"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "userId", "in": "query", "required": true, "description": "User ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
+        ],
+        "responses": {
+          "200": {
+            "description": "Favorite properties retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean", "example": true},
+                    "properties": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
+                          "title": {"type": "string", "example": "Modern 2BHK Apartment"},
+                          "price": {"type": "number", "example": 2500000},
+                          "propertyType": {"type": "string", "example": "apartment"},
+                          "address": {"type": "object", "description": "Property address"},
+                          "images": {"type": "array", "items": {"type": "string"}}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to fetch favorite properties",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/properties/{id}/contact": {
+      "get": {
+        "summary": "Get property contact information",
+        "description": "Retrieve contact information for property owner and agent.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n- Subscription check applies for buyers\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Provide the property ID in the URL\n3. Click \"Execute\" to fetch contact information\n\n**💡 Note:** Contact views are tracked for subscription plans.",
+        "tags": ["Properties"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "Property ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
+        ],
+        "responses": {
+          "200": {
+            "description": "Contact information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean", "example": true},
+                    "contactInfo": {
+                      "type": "object",
+                      "properties": {
+                        "owner": {
+                          "type": "object",
+                          "properties": {
+                            "name": {"type": "string", "example": "John Doe"},
+                            "email": {"type": "string", "example": "john@example.com"},
+                            "phone": {"type": "string", "example": "+91-9876543210"}
+                          }
+                        },
+                        "agent": {
+                          "type": "object",
+                          "properties": {
+                            "name": {"type": "string", "example": "Jane Smith"},
+                            "email": {"type": "string", "example": "jane@realty.com"},
+                            "phone": {"type": "string", "example": "+91-9876543211"},
+                            "profileImage": {"type": "string", "example": "https://example.com/avatar.jpg"},
+                            "bio": {"type": "string", "example": "Experienced real estate agent"},
+                            "workingHours": {"type": "object", "description": "Agent working hours"}
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid property ID",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "404": {
+            "description": "Property not found",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/projects": {
       "get": {
         "summary": "Get all projects with filters",
@@ -305,6 +762,234 @@
                     }
                   }
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{id}": {
+      "get": {
+        "summary": "Get project by ID",
+        "description": "Retrieve detailed information about a specific project.\n\n**📋 Testing Steps:**\n1. Provide the project ID in the URL\n2. Click \"Execute\" to fetch project details\n\n**💡 Note:** Returns project information with unit types and developer details.",
+        "tags": ["Projects"],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "Project ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
+        ],
+        "responses": {
+          "200": {
+            "description": "Project retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean", "example": true},
+                    "project": {"type": "object", "description": "Complete project details"}
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{id}/favorite": {
+      "post": {
+        "summary": "Add project to favorites",
+        "description": "Add a project to the authenticated user's favorites list.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Provide the project ID in the URL\n3. Click \"Execute\" to add to favorites",
+        "tags": ["Projects"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "Project ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
+        ],
+        "responses": {
+          "200": {
+            "description": "Project added to favorites successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean", "example": true},
+                    "message": {"type": "string", "example": "Project added to favorites"}
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove project from favorites",
+        "description": "Remove a project from the authenticated user's favorites list.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Provide the project ID in the URL\n3. Click \"Execute\" to remove from favorites",
+        "tags": ["Projects"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "Project ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
+        ],
+        "responses": {
+          "200": {
+            "description": "Project removed from favorites successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean", "example": true},
+                    "message": {"type": "string", "example": "Project removed from favorites"}
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found in favorites",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{id}/inquiry": {
+      "post": {
+        "summary": "Send inquiry for a project",
+        "description": "Send an inquiry message to the developer of a specific project.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Provide the project ID in the URL\n3. Fill in the message and optional phone\n4. Click \"Execute\" to send inquiry",
+        "tags": ["Projects"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "Project ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["message"],
+                "properties": {
+                  "message": {"type": "string", "description": "Inquiry message", "example": "I'm interested in this project. Can you provide more details about pricing?"},
+                  "phone": {"type": "string", "description": "Contact phone number (optional)", "example": "+91-9876543210"},
+                  "interestedUnit": {"type": "string", "description": "Specific unit type of interest", "example": "2BHK"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Inquiry sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean", "example": true},
+                    "message": {"type": "string", "example": "Inquiry sent successfully"},
+                    "inquiry": {
+                      "type": "object",
+                      "properties": {
+                        "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
+                        "project": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
+                        "message": {"type": "string", "example": "I'm interested in this project..."},
+                        "createdAt": {"type": "string", "format": "date-time"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{id}/view": {
+      "post": {
+        "summary": "Increment project view count",
+        "description": "Increment the view count for a specific project.\n\n**📋 Testing Steps:**\n1. Provide the project ID in the URL\n2. Click \"Execute\" to increment view count\n\n**💡 Note:** This endpoint tracks project popularity and engagement.",
+        "tags": ["Projects"],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "Project ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
+        ],
+        "responses": {
+          "200": {
+            "description": "View count updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean", "example": true},
+                    "views": {"type": "number", "example": 156}
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to update view count",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
               }
             }
           }
@@ -381,37 +1066,90 @@
         }
       }
     },
-    "/api/users/favorites": {
+    "/api/agents/{id}": {
       "get": {
-        "summary": "Get user favorites",
-        "description": "Retrieve all favorite properties for the authenticated user.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Use pagination parameters if needed\n3. Click \"Execute\" to fetch favorites\n\n**💡 Note:** Returns paginated results with property details.",
-        "tags": ["User Management"],
-        "security": [{"bearerAuth": []}],
+        "summary": "Get agent by ID",
+        "description": "Retrieve detailed information about a specific agent including reviews and listings.\n\n**📋 Testing Steps:**\n1. Provide the agent ID in the URL\n2. Click \"Execute\" to fetch agent details\n\n**💡 Note:** Returns agent profile with specializations, ratings, and recent listings.",
+        "tags": ["Agents"],
         "parameters": [
-          {"name": "page", "in": "query", "description": "Page number", "schema": {"type": "string"}, "example": "1"},
-          {"name": "limit", "in": "query", "description": "Results per page", "schema": {"type": "string"}, "example": "10"}
+          {"name": "id", "in": "path", "required": true, "description": "Agent ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
         ],
         "responses": {
           "200": {
-            "description": "Favorites retrieved successfully",
+            "description": "Agent retrieved successfully",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "favorites": {
+                    "success": {"type": "boolean", "example": true},
+                    "agent": {
+                      "type": "object",
+                      "properties": {
+                        "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
+                        "name": {"type": "string", "example": "John Doe"},
+                        "email": {"type": "string", "example": "john@example.com"},
+                        "phone": {"type": "string", "example": "+91-9876543210"},
+                        "agentInfo": {
+                          "type": "object",
+                          "properties": {
+                            "agency": {"type": "string", "example": "ABC Realty"},
+                            "experience": {"type": "number", "example": 5},
+                            "specializations": {"type": "array", "items": {"type": "string"}},
+                            "rating": {"type": "number", "example": 4.5},
+                            "reviewCount": {"type": "number", "example": 25},
+                            "listings": {"type": "number", "example": 15}
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Agent not found",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agents/{id}/reviews": {
+      "get": {
+        "summary": "Get agent reviews",
+        "description": "Retrieve all reviews for a specific agent.\n\n**📋 Testing Steps:**\n1. Provide the agent ID in the URL\n2. Use pagination parameters if needed\n3. Click \"Execute\" to fetch reviews\n\n**💡 Note:** Returns reviews with client feedback and ratings.",
+        "tags": ["Agents"],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "Agent ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"},
+          {"name": "page", "in": "query", "description": "Page number", "schema": {"type": "string"}, "example": "1"},
+          {"name": "limit", "in": "query", "description": "Results per page", "schema": {"type": "string"}, "example": "10"}
+        ],
+        "responses": {
+          "200": {
+            "description": "Reviews retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "reviews": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "properties": {
                           "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
-                          "property": {
+                          "rating": {"type": "number", "example": 5},
+                          "comment": {"type": "string", "example": "Excellent service and very professional"},
+                          "client": {
                             "type": "object",
                             "properties": {
-                              "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
-                              "title": {"type": "string", "example": "Modern 2BHK Apartment"},
-                              "price": {"type": "number", "example": 2500000},
-                              "images": {"type": "array", "items": {"type": "string"}}
+                              "name": {"type": "string", "example": "Jane Smith"},
+                              "image": {"type": "string", "example": "https://example.com/avatar.jpg"}
                             }
                           },
                           "createdAt": {"type": "string", "format": "date-time"}
@@ -421,10 +1159,121 @@
                     "pagination": {
                       "type": "object",
                       "properties": {
-                        "total": {"type": "number", "example": 15},
+                        "total": {"type": "number", "example": 25},
                         "page": {"type": "number", "example": 1},
                         "limit": {"type": "number", "example": 10},
-                        "pages": {"type": "number", "example": 2}
+                        "pages": {"type": "number", "example": 3}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Agent not found",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Add agent review",
+        "description": "Add a review for an agent after working with them.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Provide the agent ID in the URL\n3. Fill in rating and comment\n4. Click \"Execute\" to submit review",
+        "tags": ["Agents"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "Agent ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["rating", "comment"],
+                "properties": {
+                  "rating": {"type": "number", "minimum": 1, "maximum": 5, "description": "Rating from 1-5", "example": 5},
+                  "comment": {"type": "string", "description": "Review comment", "example": "Excellent service and very professional"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Review submitted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean", "example": true},
+                    "message": {"type": "string", "example": "Review submitted successfully"},
+                    "review": {"type": "object", "description": "Created review object"}
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "404": {
+            "description": "Agent not found",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agents/analytics": {
+      "get": {
+        "summary": "Get agent analytics",
+        "description": "Retrieve analytics data for the authenticated agent.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n- User must be an agent\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Use date range parameters if needed\n3. Click \"Execute\" to fetch analytics\n\n**💡 Note:** Returns performance metrics and insights.",
+        "tags": ["Agents"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "startDate", "in": "query", "description": "Start date for analytics", "schema": {"type": "string", "format": "date"}, "example": "2024-01-01"},
+          {"name": "endDate", "in": "query", "description": "End date for analytics", "schema": {"type": "string", "format": "date"}, "example": "2024-12-31"}
+        ],
+        "responses": {
+          "200": {
+            "description": "Agent analytics retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "analytics": {
+                      "type": "object",
+                      "properties": {
+                        "totalProperties": {"type": "number", "example": 25},
+                        "totalInquiries": {"type": "number", "example": 150},
+                        "conversionRate": {"type": "number", "example": 12.5},
+                        "averageResponseTime": {"type": "number", "example": 2.3},
+                        "monthlyTrends": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "month": {"type": "string", "example": "2024-01"},
+                              "inquiries": {"type": "number", "example": 15},
+                              "conversions": {"type": "number", "example": 2}
+                            }
+                          }
+                        }
                       }
                     }
                   }
@@ -434,6 +1283,536 @@
           },
           "401": {
             "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "403": {
+            "description": "Agent access required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agents/{id}/schedule": {
+      "get": {
+        "summary": "Get agent schedule",
+        "description": "Retrieve the schedule and availability of a specific agent.\n\n**📋 Testing Steps:**\n1. Provide the agent ID in the URL\n2. Use date parameters if needed\n3. Click \"Execute\" to fetch schedule\n\n**💡 Note:** Returns available time slots and booked appointments.",
+        "tags": ["Agents"],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "Agent ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"},
+          {"name": "date", "in": "query", "description": "Specific date to check", "schema": {"type": "string", "format": "date"}, "example": "2024-01-15"}
+        ],
+        "responses": {
+          "200": {
+            "description": "Agent schedule retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "schedule": {
+                      "type": "object",
+                      "properties": {
+                        "workingHours": {
+                          "type": "object",
+                          "properties": {
+                            "start": {"type": "string", "example": "09:00"},
+                            "end": {"type": "string", "example": "18:00"}
+                          }
+                        },
+                        "availableSlots": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "start": {"type": "string", "format": "date-time"},
+                              "end": {"type": "string", "format": "date-time"},
+                              "available": {"type": "boolean", "example": true}
+                            }
+                          }
+                        },
+                        "bookedAppointments": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
+                              "start": {"type": "string", "format": "date-time"},
+                              "end": {"type": "string", "format": "date-time"},
+                              "type": {"type": "string", "example": "property_viewing"}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Agent not found",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agents/{id}/appointments": {
+      "get": {
+        "summary": "Get agent appointments",
+        "description": "Retrieve appointments for a specific agent.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n- Agents see all appointments, clients see only their own\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Provide the agent ID in the URL\n3. Use query parameters to filter appointments\n4. Click \"Execute\" to fetch appointments",
+        "tags": ["Agents"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "Agent ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"},
+          {"name": "status", "in": "query", "description": "Filter by appointment status", "schema": {"type": "string"}, "example": "confirmed"},
+          {"name": "startDate", "in": "query", "description": "Start date filter", "schema": {"type": "string", "format": "date"}, "example": "2024-01-01"},
+          {"name": "endDate", "in": "query", "description": "End date filter", "schema": {"type": "string", "format": "date"}, "example": "2024-12-31"}
+        ],
+        "responses": {
+          "200": {
+            "description": "Appointments retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "appointments": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
+                          "date": {"type": "string", "format": "date", "example": "2024-01-15"},
+                          "startTime": {"type": "string", "example": "10:00"},
+                          "endTime": {"type": "string", "example": "11:00"},
+                          "type": {"type": "string", "example": "property_viewing"},
+                          "status": {"type": "string", "example": "confirmed"},
+                          "client": {"type": "string", "example": "64b29a1234abcd5678ef90ac"},
+                          "property": {"type": "string", "example": "64b29a1234abcd5678ef90ad"},
+                          "notes": {"type": "string", "example": "Client wants to see the balcony"}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid agent ID format",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "404": {
+            "description": "Schedule not found",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create new appointment",
+        "description": "Create a new appointment with the agent.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Provide the agent ID in the URL\n3. Fill in appointment details\n4. Click \"Execute\" to create appointment",
+        "tags": ["Agents"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "Agent ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["date", "startTime", "endTime", "type"],
+                "properties": {
+                  "date": {"type": "string", "format": "date", "description": "Appointment date", "example": "2024-01-15"},
+                  "startTime": {"type": "string", "description": "Start time", "example": "10:00"},
+                  "endTime": {"type": "string", "description": "End time", "example": "11:00"},
+                  "type": {"type": "string", "description": "Appointment type", "example": "property_viewing"},
+                  "property": {"type": "string", "description": "Property ID (optional)", "example": "64b29a1234abcd5678ef90ad"},
+                  "notes": {"type": "string", "description": "Additional notes", "example": "Please show the balcony view"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Appointment created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean", "example": true},
+                    "message": {"type": "string", "example": "Appointment created successfully"},
+                    "appointment": {"type": "object", "description": "Created appointment details"}
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid appointment details or time conflict",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "409": {
+            "description": "Time slot not available",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update appointment",
+        "description": "Update an existing appointment details.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n- Only appointment owner or agent can update\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Provide the agent ID in the URL\n3. Provide appointment ID and updated details\n4. Click \"Execute\" to update appointment",
+        "tags": ["Agents"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "Agent ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["appointmentId"],
+                "properties": {
+                  "appointmentId": {"type": "string", "description": "Appointment ID to update", "example": "64b29a1234abcd5678ef90ae"},
+                  "date": {"type": "string", "format": "date", "description": "New appointment date", "example": "2024-01-16"},
+                  "startTime": {"type": "string", "description": "New start time", "example": "11:00"},
+                  "endTime": {"type": "string", "description": "New end time", "example": "12:00"},
+                  "status": {"type": "string", "description": "New status", "example": "confirmed"},
+                  "notes": {"type": "string", "description": "Updated notes", "example": "Rescheduled for better timing"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Appointment updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean", "example": true},
+                    "message": {"type": "string", "example": "Appointment updated successfully"},
+                    "appointment": {"type": "object", "description": "Updated appointment details"}
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid update data or time conflict",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "404": {
+            "description": "Appointment not found",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete appointment",
+        "description": "Delete an existing appointment.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n- Only appointment owner or agent can delete\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Provide the agent ID in the URL\n3. Provide appointment ID in request body\n4. Click \"Execute\" to delete appointment",
+        "tags": ["Agents"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "Agent ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["appointmentId"],
+                "properties": {
+                  "appointmentId": {"type": "string", "description": "Appointment ID to delete", "example": "64b29a1234abcd5678ef90ae"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Appointment deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean", "example": true},
+                    "message": {"type": "string", "example": "Appointment deleted successfully"}
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "404": {
+            "description": "Appointment not found",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "User login",
+        "description": "Authenticate user with email and password to receive JWT token.\n\n**📋 Testing Steps:**\n1. Fill in email and password\n2. Click \"Execute\" to login\n3. Copy the returned JWT token for other endpoints\n\n**💡 Note:** Use the returned token in the Authorize button for protected endpoints.",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": {"type": "string", "format": "email", "description": "User's email address", "example": "user@example.com"},
+                  "password": {"type": "string", "description": "User's password", "example": "password123"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean", "example": true},
+                    "message": {"type": "string", "example": "Login successful"},
+                    "token": {"type": "string", "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."},
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
+                        "name": {"type": "string", "example": "John Doe"},
+                        "email": {"type": "string", "example": "user@example.com"},
+                        "role": {"type": "string", "example": "user"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required fields",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "403": {
+            "description": "Email not verified",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/signup": {
+      "post": {
+        "summary": "User registration",
+        "description": "Register a new user account with name, email, and password.\n\n**📋 Testing Steps:**\n1. Fill in name, email, password, and isAgent flag\n2. Click \"Execute\" to create account\n3. Check email for verification code\n\n**💡 Note:** Account requires email verification before login.",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password"],
+                "properties": {
+                  "name": {"type": "string", "description": "User's full name", "example": "John Doe"},
+                  "email": {"type": "string", "format": "email", "description": "User's email address", "example": "user@example.com"},
+                  "password": {"type": "string", "description": "User's password (min 8 characters)", "example": "password123"},
+                  "isAgent": {"type": "boolean", "description": "Whether user is registering as an agent", "example": false}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Account created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean", "example": true},
+                    "message": {"type": "string", "example": "Account created successfully. Please check your email for verification."},
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
+                        "name": {"type": "string", "example": "John Doe"},
+                        "email": {"type": "string", "example": "user@example.com"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error or email already exists",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/custom-google": {
+      "post": {
+        "summary": "Google OAuth login",
+        "description": "Authenticate user with Google OAuth token to receive JWT token.\n\n**📋 Testing Steps:**\n1. Provide Google OAuth token in request body\n2. Click \"Execute\" to login\n3. Copy the returned JWT token for other endpoints\n\n**💡 Note:** This endpoint handles Google OAuth authentication and creates/updates user accounts.",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["token"],
+                "properties": {
+                  "token": {"type": "string", "description": "Google OAuth ID token", "example": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjE..."}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Google login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean", "example": true},
+                    "message": {"type": "string", "example": "Google login successful"},
+                    "token": {"type": "string", "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."},
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
+                        "name": {"type": "string", "example": "John Doe"},
+                        "email": {"type": "string", "example": "john@gmail.com"},
+                        "image": {"type": "string", "example": "https://lh3.googleusercontent.com/..."},
+                        "role": {"type": "string", "example": "user"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid token",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "401": {
+            "description": "Token verification failed",
             "content": {
               "application/json": {
                 "schema": {"$ref": "#/components/schemas/Error"}
@@ -633,508 +2012,6 @@
         }
       }
     },
-    "/api/users/profile": {
-      "get": {
-        "summary": "Get current user profile",
-        "description": "Retrieve the authenticated user's profile information.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Click \"Execute\" to fetch profile\n\n**💡 Note:** Returns user profile without sensitive information like password.",
-        "tags": ["User Management"],
-        "security": [{"bearerAuth": []}],
-        "responses": {
-          "200": {
-            "description": "Profile retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
-                    "name": {"type": "string", "example": "John Doe"},
-                    "email": {"type": "string", "example": "john@example.com"},
-                    "phone": {"type": "string", "example": "+91-9876543210"},
-                    "role": {"type": "string", "example": "user"},
-                    "isAgent": {"type": "boolean", "example": false},
-                    "lastActive": {"type": "string", "format": "date-time"}
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          },
-          "404": {
-            "description": "User not found",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "summary": "Update current user profile",
-        "description": "Update the authenticated user's profile information.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Fill in the fields you want to update\n3. Click \"Execute\" to update profile\n\n**⚠️ Note:** Some fields like password, email, and role cannot be updated through this endpoint.",
-        "tags": ["User Management"],
-        "security": [{"bearerAuth": []}],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {"type": "string", "description": "User's full name", "example": "John Doe"},
-                  "phone": {"type": "string", "description": "Phone number", "example": "+91-9876543210"},
-                  "bio": {"type": "string", "description": "User bio", "example": "Real estate enthusiast"},
-                  "address": {
-                    "type": "object",
-                    "properties": {
-                      "street": {"type": "string", "example": "Main Street"},
-                      "city": {"type": "string", "example": "Delhi"},
-                      "state": {"type": "string", "example": "Delhi"},
-                      "zipCode": {"type": "string", "example": "110001"}
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Profile updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {"type": "boolean", "example": true},
-                    "message": {"type": "string", "example": "Profile updated successfully"},
-                    "user": {"type": "object", "description": "Updated user object"}
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/users/projects": {
-      "get": {
-        "summary": "Get user's projects",
-        "description": "Retrieve all projects created by the authenticated user.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Use pagination parameters if needed\n3. Click \"Execute\" to fetch projects\n\n**💡 Note:** Returns projects with their current status.",
-        "tags": ["User Management"],
-        "security": [{"bearerAuth": []}],
-        "parameters": [
-          {"name": "page", "in": "query", "description": "Page number", "schema": {"type": "string"}, "example": "1"},
-          {"name": "limit", "in": "query", "description": "Results per page", "schema": {"type": "string"}, "example": "10"}
-        ],
-        "responses": {
-          "200": {
-            "description": "Projects retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "projects": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
-                          "projectName": {"type": "string", "example": "Dwarka Heights"},
-                          "projectType": {"type": "string", "example": "residential"},
-                          "status": {"type": "string", "example": "active"},
-                          "createdAt": {"type": "string", "format": "date-time"}
-                        }
-                      }
-                    },
-                    "pagination": {
-                      "type": "object",
-                      "properties": {
-                        "total": {"type": "number", "example": 5},
-                        "page": {"type": "number", "example": 1},
-                        "limit": {"type": "number", "example": 10},
-                        "pages": {"type": "number", "example": 1}
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/users/inquiries": {
-      "get": {
-        "summary": "Get user's inquiries",
-        "description": "Retrieve all inquiries sent by the authenticated user.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Use pagination parameters if needed\n3. Click \"Execute\" to fetch inquiries\n\n**💡 Note:** Returns inquiries with property details.",
-        "tags": ["User Management"],
-        "security": [{"bearerAuth": []}],
-        "parameters": [
-          {"name": "page", "in": "query", "description": "Page number", "schema": {"type": "string"}, "example": "1"},
-          {"name": "limit", "in": "query", "description": "Results per page", "schema": {"type": "string"}, "example": "10"}
-        ],
-        "responses": {
-          "200": {
-            "description": "Inquiries retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "inquiries": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
-                          "property": {
-                            "type": "object",
-                            "properties": {
-                              "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
-                              "title": {"type": "string", "example": "Modern 2BHK Apartment"},
-                              "price": {"type": "number", "example": 2500000}
-                            }
-                          },
-                          "message": {"type": "string", "example": "I'm interested in this property..."},
-                          "status": {"type": "string", "example": "new"},
-                          "createdAt": {"type": "string", "format": "date-time"}
-                        }
-                      }
-                    },
-                    "pagination": {
-                      "type": "object",
-                      "properties": {
-                        "total": {"type": "number", "example": 8},
-                        "page": {"type": "number", "example": 1},
-                        "limit": {"type": "number", "example": 10},
-                        "pages": {"type": "number", "example": 1}
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/properties/{id}/inquiries": {
-      "post": {
-        "summary": "Send inquiry for a property",
-        "description": "Send an inquiry message to the owner of a specific property.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Provide the property ID in the URL\n3. Fill in the message and optional phone\n4. Click \"Execute\" to send inquiry\n\n**⚠️ Note:** You cannot send inquiries to your own properties.",
-        "tags": ["Properties"],
-        "security": [{"bearerAuth": []}],
-        "parameters": [
-          {"name": "id", "in": "path", "required": true, "description": "Property ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["message"],
-                "properties": {
-                  "message": {"type": "string", "description": "Inquiry message", "example": "I'm interested in this property. Can you provide more details?"},
-                  "phone": {"type": "string", "description": "Contact phone number (optional)", "example": "+91-9876543210"}
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Inquiry sent successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {"type": "boolean", "example": true},
-                    "message": {"type": "string", "example": "Inquiry sent successfully"},
-                    "inquiry": {
-                      "type": "object",
-                      "properties": {
-                        "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
-                        "property": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
-                        "message": {"type": "string", "example": "I'm interested in this property..."},
-                        "createdAt": {"type": "string", "format": "date-time"}
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid request or own property",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          },
-          "404": {
-            "description": "Property not found",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/builders": {
-      "get": {
-        "summary": "Get all builders",
-        "description": "Fetches all verified builders with their project information.\n\n**📋 Testing Steps:**\n1. Use query parameters to filter builders\n2. No authentication required for viewing builders\n\n**💡 Note:** Returns builders with their project counts and ratings.",
-        "tags": ["Builders"],
-        "parameters": [
-          {"name": "page", "in": "query", "description": "Page number", "schema": {"type": "string"}, "example": "1"},
-          {"name": "limit", "in": "query", "description": "Results per page", "schema": {"type": "string"}, "example": "10"},
-          {"name": "city", "in": "query", "description": "City name", "schema": {"type": "string"}, "example": "Delhi"},
-          {"name": "search", "in": "query", "description": "Search term", "schema": {"type": "string"}, "example": "ABC Developers"}
-        ],
-        "responses": {
-          "200": {
-            "description": "Builders retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "builders": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
-                          "name": {"type": "string", "example": "ABC Developers"},
-                          "email": {"type": "string", "example": "info@abcdevelopers.com"},
-                          "phone": {"type": "string", "example": "+91-9876543210"},
-                          "city": {"type": "string", "example": "Delhi"},
-                          "projectCount": {"type": "number", "example": 15},
-                          "rating": {"type": "number", "example": 4.5}
-                        }
-                      }
-                    },
-                    "pagination": {
-                      "type": "object",
-                      "properties": {
-                        "total": {"type": "number", "example": 25},
-                        "page": {"type": "number", "example": 1},
-                        "limit": {"type": "number", "example": 10},
-                        "pages": {"type": "number", "example": 3}
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/builders/{id}": {
-      "get": {
-        "summary": "Get builder by ID",
-        "description": "Retrieve detailed information about a specific builder.\n\n**📋 Testing Steps:**\n1. Provide the builder ID in the URL\n2. Click \"Execute\" to fetch builder details\n\n**💡 Note:** Returns builder information with their projects.",
-        "tags": ["Builders"],
-        "parameters": [
-          {"name": "id", "in": "path", "required": true, "description": "Builder ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
-        ],
-        "responses": {
-          "200": {
-            "description": "Builder retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {"type": "boolean", "example": true},
-                    "builder": {"type": "object", "description": "Builder details with projects"}
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Builder not found",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/support": {
-      "post": {
-        "summary": "Submit support request",
-        "description": "Submit a support request with user issue details.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Fill in all required fields\n3. Click \"Execute\" to submit\n\n**💡 Note:** Support requests are tracked and managed by the support team.",
-        "tags": ["Contact & Support"],
-        "security": [{"bearerAuth": []}],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["subject", "message", "priority"],
-                "properties": {
-                  "subject": {"type": "string", "description": "Support request subject", "example": "Login Issue"},
-                  "message": {"type": "string", "description": "Detailed description of the issue", "example": "I'm unable to login to my account..."},
-                  "priority": {"type": "string", "enum": ["low", "medium", "high"], "description": "Issue priority level", "example": "medium"},
-                  "category": {"type": "string", "description": "Issue category (optional)", "example": "authentication"}
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Support request submitted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {"type": "boolean", "example": true},
-                    "message": {"type": "string", "example": "Support request submitted successfully"},
-                    "ticketId": {"type": "string", "example": "SR-2024-001"}
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Missing required fields",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/send-feedback": {
-      "post": {
-        "summary": "Submit feedback",
-        "description": "Submit user feedback about the platform or services.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Fill in all required fields\n3. Click \"Execute\" to submit\n\n**💡 Note:** Feedback helps improve the platform.",
-        "tags": ["Contact & Support"],
-        "security": [{"bearerAuth": []}],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["type", "message", "rating"],
-                "properties": {
-                  "type": {"type": "string", "enum": ["bug", "feature", "general"], "description": "Feedback type", "example": "feature"},
-                  "message": {"type": "string", "description": "Detailed feedback message", "example": "The property search feature is great..."},
-                  "rating": {"type": "number", "minimum": 1, "maximum": 5, "description": "Rating from 1-5", "example": 5},
-                  "category": {"type": "string", "description": "Feedback category (optional)", "example": "search"}
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Feedback submitted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {"type": "boolean", "example": true},
-                    "message": {"type": "string", "example": "Feedback submitted successfully"}
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Missing required fields",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/geocode": {
       "get": {
         "summary": "Geocode address to coordinates",
@@ -1184,332 +2061,29 @@
         }
       }
     },
-    "/api/auth/login": {
-      "post": {
-        "summary": "User login",
-        "description": "Authenticate user with email and password to receive JWT token.\n\n**📋 Testing Steps:**\n1. Fill in email and password\n2. Click \"Execute\" to login\n3. Copy the returned JWT token for other endpoints\n\n**💡 Note:** Use the returned token in the Authorize button for protected endpoints.",
-        "tags": ["Authentication"],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["email", "password"],
-                "properties": {
-                  "email": {"type": "string", "format": "email", "description": "User's email address", "example": "user@example.com"},
-                  "password": {"type": "string", "description": "User's password", "example": "password123"}
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Login successful",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {"type": "boolean", "example": true},
-                    "message": {"type": "string", "example": "Login successful"},
-                    "token": {"type": "string", "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."},
-                    "user": {
-                      "type": "object",
-                      "properties": {
-                        "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
-                        "name": {"type": "string", "example": "John Doe"},
-                        "email": {"type": "string", "example": "user@example.com"},
-                        "role": {"type": "string", "example": "user"}
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Missing required fields",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          },
-          "401": {
-            "description": "Invalid credentials",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          },
-          "403": {
-            "description": "Email not verified",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/auth/signup": {
-      "post": {
-        "summary": "User registration",
-        "description": "Register a new user account with name, email, and password.\n\n**📋 Testing Steps:**\n1. Fill in name, email, password, and isAgent flag\n2. Click \"Execute\" to create account\n3. Check email for verification code\n\n**💡 Note:** Account requires email verification before login.",
-        "tags": ["Authentication"],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["name", "email", "password"],
-                "properties": {
-                  "name": {"type": "string", "description": "User's full name", "example": "John Doe"},
-                  "email": {"type": "string", "format": "email", "description": "User's email address", "example": "user@example.com"},
-                  "password": {"type": "string", "description": "User's password (min 8 characters)", "example": "password123"},
-                  "isAgent": {"type": "boolean", "description": "Whether user is registering as an agent", "example": false}
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Account created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {"type": "boolean", "example": true},
-                    "message": {"type": "string", "example": "Account created successfully. Please check your email for verification."},
-                    "user": {
-                      "type": "object",
-                      "properties": {
-                        "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
-                        "name": {"type": "string", "example": "John Doe"},
-                        "email": {"type": "string", "example": "user@example.com"}
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Validation error or email already exists",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/auth/verify-email": {
-      "post": {
-        "summary": "Verify email address",
-        "description": "Verify user's email address using the verification code sent during registration.\n\n**📋 Testing Steps:**\n1. Use the email and verification code from registration\n2. Fill in the required fields\n3. Click \"Execute\" to verify email\n\n**💡 Note:** Email verification is required before login.",
-        "tags": ["Authentication"],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["email", "verificationCode"],
-                "properties": {
-                  "email": {"type": "string", "format": "email", "description": "User's email address", "example": "user@example.com"},
-                  "verificationCode": {"type": "string", "description": "6-digit verification code", "example": "123456"}
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Email verified successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {"type": "boolean", "example": true},
-                    "message": {"type": "string", "example": "Email verified successfully"}
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid or expired verification code",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          },
-          "404": {
-            "description": "User not found",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/auth/forgot-password": {
-      "post": {
-        "summary": "Request password reset",
-        "description": "Send password reset link to user's email address.\n\n**📋 Testing Steps:**\n1. Provide the email address\n2. Click \"Execute\" to send reset link\n3. Check email for reset instructions\n\n**💡 Note:** Reset link expires after 1 hour.",
-        "tags": ["Authentication"],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["email"],
-                "properties": {
-                  "email": {"type": "string", "format": "email", "description": "User's email address", "example": "user@example.com"}
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Reset link sent successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {"type": "boolean", "example": true},
-                    "message": {"type": "string", "example": "Password reset link sent to your email"}
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "User not found",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/auth/reset-password": {
-      "post": {
-        "summary": "Reset password with token",
-        "description": "Reset user's password using the token from the reset email.\n\n**📋 Testing Steps:**\n1. Use the token from the password reset email\n2. Provide new password\n3. Click \"Execute\" to reset password\n\n**💡 Note:** Token expires after 1 hour.",
-        "tags": ["Authentication"],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["token", "newPassword"],
-                "properties": {
-                  "token": {"type": "string", "description": "Reset token from email", "example": "abc123def456..."},
-                  "newPassword": {"type": "string", "description": "New password (min 8 characters)", "example": "newpassword123"}
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Password reset successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {"type": "boolean", "example": true},
-                    "message": {"type": "string", "example": "Password reset successfully"}
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid or expired token",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/projects/{id}": {
+    "/api/users/profile": {
       "get": {
-        "summary": "Get project by ID",
-        "description": "Retrieve detailed information about a specific project.\n\n**📋 Testing Steps:**\n1. Provide the project ID in the URL\n2. Click \"Execute\" to fetch project details\n\n**💡 Note:** Returns project information with unit types and developer details.",
-        "tags": ["Projects"],
-        "parameters": [
-          {"name": "id", "in": "path", "required": true, "description": "Project ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
-        ],
-        "responses": {
-          "200": {
-            "description": "Project retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {"type": "boolean", "example": true},
-                    "project": {"type": "object", "description": "Complete project details"}
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Project not found",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/projects/{id}/favorite": {
-      "post": {
-        "summary": "Add project to favorites",
-        "description": "Add a project to the authenticated user's favorites list.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Provide the project ID in the URL\n3. Click \"Execute\" to add to favorites",
-        "tags": ["Projects"],
+        "summary": "Get user profile",
+        "description": "Retrieve the authenticated user's profile information.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Click \"Execute\" to fetch your profile\n\n**💡 Note:** Returns user profile without sensitive information like password.",
+        "tags": ["User Management"],
         "security": [{"bearerAuth": []}],
-        "parameters": [
-          {"name": "id", "in": "path", "required": true, "description": "Project ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
-        ],
         "responses": {
           "200": {
-            "description": "Project added to favorites successfully",
+            "description": "Profile retrieved successfully",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {"type": "boolean", "example": true},
-                    "message": {"type": "string", "example": "Project added to favorites"}
+                    "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
+                    "name": {"type": "string", "example": "John Doe"},
+                    "email": {"type": "string", "example": "john@example.com"},
+                    "phone": {"type": "string", "example": "+91-9876543210"},
+                    "image": {"type": "string", "example": "https://example.com/avatar.jpg"},
+                    "role": {"type": "string", "example": "user"},
+                    "isAgent": {"type": "boolean", "example": false},
+                    "createdAt": {"type": "string", "format": "date-time"},
+                    "lastActive": {"type": "string", "format": "date-time"}
                   }
                 }
               }
@@ -1524,7 +2098,7 @@
             }
           },
           "404": {
-            "description": "Project not found",
+            "description": "User not found",
             "content": {
               "application/json": {
                 "schema": {"$ref": "#/components/schemas/Error"}
@@ -1533,26 +2107,57 @@
           }
         }
       },
-      "delete": {
-        "summary": "Remove project from favorites",
-        "description": "Remove a project from the authenticated user's favorites list.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Provide the project ID in the URL\n3. Click \"Execute\" to remove from favorites",
-        "tags": ["Projects"],
+      "put": {
+        "summary": "Update user profile",
+        "description": "Update the authenticated user's profile information.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Fill in the fields you want to update\n3. Click \"Execute\" to update profile\n\n**⚠️ Note:** Some fields like password, email, and role cannot be updated through this endpoint.",
+        "tags": ["User Management"],
         "security": [{"bearerAuth": []}],
-        "parameters": [
-          {"name": "id", "in": "path", "required": true, "description": "Project ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
-        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {"type": "string", "description": "User's full name", "example": "John Doe"},
+                  "phone": {"type": "string", "description": "Phone number", "example": "+91-9876543210"},
+                  "image": {"type": "string", "description": "Profile image URL", "example": "https://example.com/avatar.jpg"},
+                  "bio": {"type": "string", "description": "User bio", "example": "Real estate enthusiast"},
+                  "address": {
+                    "type": "object",
+                    "properties": {
+                      "street": {"type": "string", "example": "Main Street"},
+                      "city": {"type": "string", "example": "Delhi"},
+                      "state": {"type": "string", "example": "Delhi"},
+                      "zipCode": {"type": "string", "example": "110001"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "Project removed from favorites successfully",
+            "description": "Profile updated successfully",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
                     "success": {"type": "boolean", "example": true},
-                    "message": {"type": "string", "example": "Project removed from favorites"}
+                    "message": {"type": "string", "example": "Profile updated successfully"},
+                    "user": {"type": "object", "description": "Updated user profile"}
                   }
                 }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
               }
             }
           },
@@ -1563,60 +2168,55 @@
                 "schema": {"$ref": "#/components/schemas/Error"}
               }
             }
-          },
-          "404": {
-            "description": "Project not found in favorites",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
           }
         }
       }
     },
-    "/api/projects/{id}/inquiry": {
-      "post": {
-        "summary": "Send inquiry for a project",
-        "description": "Send an inquiry message to the developer of a specific project.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Provide the project ID in the URL\n3. Fill in the message and optional phone\n4. Click \"Execute\" to send inquiry",
-        "tags": ["Projects"],
+    "/api/users/favorites": {
+      "get": {
+        "summary": "Get user's favorite properties",
+        "description": "Retrieve all favorite properties for the authenticated user.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Use pagination parameters if needed\n3. Click \"Execute\" to fetch favorite properties\n\n**💡 Note:** Returns properties with full details and pagination.",
+        "tags": ["User Management"],
         "security": [{"bearerAuth": []}],
         "parameters": [
-          {"name": "id", "in": "path", "required": true, "description": "Project ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
+          {"name": "page", "in": "query", "description": "Page number", "schema": {"type": "string"}, "example": "1"},
+          {"name": "limit", "in": "query", "description": "Results per page", "schema": {"type": "string"}, "example": "10"}
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["message"],
-                "properties": {
-                  "message": {"type": "string", "description": "Inquiry message", "example": "I'm interested in this project. Can you provide more details about pricing?"},
-                  "phone": {"type": "string", "description": "Contact phone number (optional)", "example": "+91-9876543210"},
-                  "interestedUnit": {"type": "string", "description": "Specific unit type of interest", "example": "2BHK"}
-                }
-              }
-            }
-          }
-        },
         "responses": {
-          "201": {
-            "description": "Inquiry sent successfully",
+          "200": {
+            "description": "Favorite properties retrieved successfully",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {"type": "boolean", "example": true},
-                    "message": {"type": "string", "example": "Inquiry sent successfully"},
-                    "inquiry": {
+                    "favorites": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
+                          "property": {
+                            "type": "object",
+                            "properties": {
+                              "id": {"type": "string", "example": "64b29a1234abcd5678ef90ac"},
+                              "title": {"type": "string", "example": "Modern 2BHK Apartment"},
+                              "price": {"type": "number", "example": 2500000},
+                              "propertyType": {"type": "string", "example": "apartment"},
+                              "images": {"type": "array", "items": {"type": "string"}}
+                            }
+                          },
+                          "createdAt": {"type": "string", "format": "date-time"}
+                        }
+                      }
+                    },
+                    "pagination": {
                       "type": "object",
                       "properties": {
-                        "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
-                        "project": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
-                        "message": {"type": "string", "example": "I'm interested in this project..."},
-                        "createdAt": {"type": "string", "format": "date-time"}
+                        "total": {"type": "number", "example": 15},
+                        "page": {"type": "number", "example": 1},
+                        "limit": {"type": "number", "example": 10},
+                        "pages": {"type": "number", "example": 2}
                       }
                     }
                   }
@@ -1631,9 +2231,61 @@
                 "schema": {"$ref": "#/components/schemas/Error"}
               }
             }
+          }
+        }
+      },
+      "post": {
+        "summary": "Add property to favorites",
+        "description": "Add a property to the authenticated user's favorites list.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Provide property ID in request body\n3. Click \"Execute\" to add to favorites",
+        "tags": ["User Management"],
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["propertyId"],
+                "properties": {
+                  "propertyId": {"type": "string", "description": "Property ID to add to favorites", "example": "64b29a1234abcd5678ef90ac"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Property added to favorites successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean", "example": true},
+                    "message": {"type": "string", "example": "Property added to favorites"}
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Property already in favorites or invalid ID",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
           },
           "404": {
-            "description": "Project not found",
+            "description": "Property not found",
             "content": {
               "application/json": {
                 "schema": {"$ref": "#/components/schemas/Error"}
@@ -1643,39 +2295,231 @@
         }
       }
     },
-    "/api/agents/{id}": {
+    "/api/users/favorites/agents": {
       "get": {
-        "summary": "Get agent by ID",
-        "description": "Retrieve detailed information about a specific agent including reviews and listings.\n\n**📋 Testing Steps:**\n1. Provide the agent ID in the URL\n2. Click \"Execute\" to fetch agent details\n\n**💡 Note:** Returns agent profile with specializations, ratings, and recent listings.",
-        "tags": ["Agents"],
-        "parameters": [
-          {"name": "id", "in": "path", "required": true, "description": "Agent ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
-        ],
+        "summary": "Get user's favorite agents",
+        "description": "Retrieve all favorite agents for the authenticated user.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Click \"Execute\" to fetch favorite agents\n\n**💡 Note:** Returns agents with profile information.",
+        "tags": ["User Management"],
+        "security": [{"bearerAuth": []}],
         "responses": {
           "200": {
-            "description": "Agent retrieved successfully",
+            "description": "Favorite agents retrieved successfully",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
                     "success": {"type": "boolean", "example": true},
-                    "agent": {
+                    "favorites": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
+                          "name": {"type": "string", "example": "Jane Smith"},
+                          "email": {"type": "string", "example": "jane@realty.com"},
+                          "phone": {"type": "string", "example": "+91-9876543211"},
+                          "image": {"type": "string", "example": "https://example.com/avatar.jpg"},
+                          "bio": {"type": "string", "example": "Experienced real estate agent"},
+                          "isAgent": {"type": "boolean", "example": true},
+                          "agentInfo": {"type": "object", "description": "Agent-specific information"}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Add agent to favorites",
+        "description": "Add an agent to the authenticated user's favorite agents list.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Provide agent ID in request body\n3. Click \"Execute\" to add agent to favorites",
+        "tags": ["User Management"],
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["agentId"],
+                "properties": {
+                  "agentId": {"type": "string", "description": "Agent ID to add to favorites", "example": "64b29a1234abcd5678ef90ab"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Agent added to favorites successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean", "example": true},
+                    "message": {"type": "string", "example": "Agent added to favorites"}
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid agent ID",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          },
+          "404": {
+            "description": "Agent not found",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/builders": {
+      "get": {
+        "summary": "Get all verified builders",
+        "description": "Fetches all verified builders with their projects and company information.\n\n**📋 Testing Steps:**\n1. Use search parameter to filter builders if needed\n2. Click \"Execute\" to fetch builders\n\n**💡 Note:** Returns builders with project counts, ratings, and company details.",
+        "tags": ["Builders"],
+        "parameters": [
+          {"name": "search", "in": "query", "description": "Search term for builder name or company", "schema": {"type": "string"}, "example": "ABC Developers"}
+        ],
+        "responses": {
+          "200": {
+            "description": "Builders retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "builders": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
+                          "title": {"type": "string", "example": "ABC Developers"},
+                          "name": {"type": "string", "example": "John Builder"},
+                          "image": {"type": "string", "example": "https://example.com/avatar.jpg"},
+                          "logo": {"type": "string", "example": "https://example.com/logo.jpg"},
+                          "projects": {"type": "number", "example": 15},
+                          "description": {"type": "string", "example": "Verified builder with 10 years of experience"},
+                          "established": {"type": "string", "example": "2014"},
+                          "headquarters": {"type": "string", "example": "Delhi, India"},
+                          "specialization": {"type": "string", "example": "Residential, Commercial"},
+                          "rating": {"type": "number", "example": 4.5},
+                          "completed": {"type": "number", "example": 12},
+                          "ongoing": {"type": "number", "example": 3},
+                          "email": {"type": "string", "example": "contact@abcdevelopers.com"},
+                          "experience": {"type": "number", "example": 10},
+                          "verified": {"type": "boolean", "example": true},
+                          "projectsList": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {"type": "string", "example": "64b29a1234abcd5678ef90ac"},
+                                "projectName": {"type": "string", "example": "Sunset Heights"},
+                                "projectType": {"type": "string", "example": "residential"},
+                                "locality": {"type": "string", "example": "Dwarka"},
+                                "city": {"type": "string", "example": "Delhi"},
+                                "status": {"type": "string", "example": "active"}
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to fetch builders",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/builders/{id}": {
+      "get": {
+        "summary": "Get builder by ID",
+        "description": "Retrieve detailed information about a specific builder including all projects.\n\n**📋 Testing Steps:**\n1. Provide the builder ID in the URL\n2. Click \"Execute\" to fetch builder details\n\n**💡 Note:** Returns builder profile with complete project portfolio.",
+        "tags": ["Builders"],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "Builder ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
+        ],
+        "responses": {
+          "200": {
+            "description": "Builder retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean", "example": true},
+                    "builder": {
                       "type": "object",
                       "properties": {
                         "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
-                        "name": {"type": "string", "example": "John Doe"},
-                        "email": {"type": "string", "example": "john@example.com"},
-                        "phone": {"type": "string", "example": "+91-9876543210"},
-                        "agentInfo": {
+                        "name": {"type": "string", "example": "John Builder"},
+                        "email": {"type": "string", "example": "john@abcdevelopers.com"},
+                        "image": {"type": "string", "example": "https://example.com/avatar.jpg"},
+                        "builderInfo": {
                           "type": "object",
                           "properties": {
-                            "agency": {"type": "string", "example": "ABC Realty"},
-                            "experience": {"type": "number", "example": 5},
+                            "companyName": {"type": "string", "example": "ABC Developers"},
+                            "experience": {"type": "number", "example": 10},
                             "specializations": {"type": "array", "items": {"type": "string"}},
                             "rating": {"type": "number", "example": 4.5},
-                            "reviewCount": {"type": "number", "example": 25},
-                            "listings": {"type": "number", "example": 15}
+                            "completedProjects": {"type": "number", "example": 12},
+                            "ongoingProjects": {"type": "number", "example": 3},
+                            "verified": {"type": "boolean", "example": true}
+                          }
+                        },
+                        "projects": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {"type": "string", "example": "64b29a1234abcd5678ef90ac"},
+                              "projectName": {"type": "string", "example": "Sunset Heights"},
+                              "projectType": {"type": "string", "example": "residential"},
+                              "locality": {"type": "string", "example": "Dwarka"},
+                              "city": {"type": "string", "example": "Delhi"},
+                              "status": {"type": "string", "example": "active"}
+                            }
                           }
                         }
                       }
@@ -1686,126 +2530,7 @@
             }
           },
           "404": {
-            "description": "Agent not found",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/agents/{id}/reviews": {
-      "get": {
-        "summary": "Get agent reviews",
-        "description": "Retrieve all reviews for a specific agent.\n\n**📋 Testing Steps:**\n1. Provide the agent ID in the URL\n2. Use pagination parameters if needed\n3. Click \"Execute\" to fetch reviews\n\n**💡 Note:** Returns reviews with client feedback and ratings.",
-        "tags": ["Agents"],
-        "parameters": [
-          {"name": "id", "in": "path", "required": true, "description": "Agent ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"},
-          {"name": "page", "in": "query", "description": "Page number", "schema": {"type": "string"}, "example": "1"},
-          {"name": "limit", "in": "query", "description": "Results per page", "schema": {"type": "string"}, "example": "10"}
-        ],
-        "responses": {
-          "200": {
-            "description": "Reviews retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "reviews": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {"type": "string", "example": "64b29a1234abcd5678ef90ab"},
-                          "rating": {"type": "number", "example": 5},
-                          "comment": {"type": "string", "example": "Excellent service and very professional"},
-                          "client": {
-                            "type": "object",
-                            "properties": {
-                              "name": {"type": "string", "example": "Jane Smith"},
-                              "image": {"type": "string", "example": "https://example.com/avatar.jpg"}
-                            }
-                          },
-                          "createdAt": {"type": "string", "format": "date-time"}
-                        }
-                      }
-                    },
-                    "pagination": {
-                      "type": "object",
-                      "properties": {
-                        "total": {"type": "number", "example": 25},
-                        "page": {"type": "number", "example": 1},
-                        "limit": {"type": "number", "example": 10},
-                        "pages": {"type": "number", "example": 3}
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Agent not found",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Add agent review",
-        "description": "Add a review for an agent after working with them.\n\n**🔐 IMPORTANT: Authentication Required**\n- You must authorize with a valid JWT token first\n\n**📋 Testing Steps:**\n1. Authorize with your JWT token first\n2. Provide the agent ID in the URL\n3. Fill in rating and comment\n4. Click \"Execute\" to submit review",
-        "tags": ["Agents"],
-        "security": [{"bearerAuth": []}],
-        "parameters": [
-          {"name": "id", "in": "path", "required": true, "description": "Agent ID", "schema": {"type": "string"}, "example": "64b29a1234abcd5678ef90ab"}
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["rating", "comment"],
-                "properties": {
-                  "rating": {"type": "number", "minimum": 1, "maximum": 5, "description": "Rating from 1-5", "example": 5},
-                  "comment": {"type": "string", "description": "Review comment", "example": "Excellent service and very professional"}
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Review submitted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {"type": "boolean", "example": true},
-                    "message": {"type": "string", "example": "Review submitted successfully"},
-                    "review": {"type": "object", "description": "Created review object"}
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-              }
-            }
-          },
-          "404": {
-            "description": "Agent not found",
+            "description": "Builder not found",
             "content": {
               "application/json": {
                 "schema": {"$ref": "#/components/schemas/Error"}
